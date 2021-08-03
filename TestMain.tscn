@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://TestMain.gd" type="Script" id=1]
+
+[node name="TestMain" type="Control"]
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="."]
+margin_left = 216.0
+margin_top = 80.0
+margin_right = 704.0
+margin_bottom = 448.0
+rect_min_size = Vector2( 424, 304 )
+text = "Result string"
+autowrap = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Button" type="Button" parent="."]
+margin_left = 64.0
+margin_top = 64.0
+margin_right = 188.0
+margin_bottom = 109.0
+text = "View call"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ClearButton" type="Button" parent="."]
+margin_left = 232.0
+margin_top = 40.0
+margin_right = 276.0
+margin_bottom = 60.0
+text = "Clear"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
+[connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
