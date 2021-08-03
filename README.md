@@ -1,2 +1,2 @@
-# godot-near-sdk
-A lightweight NEAR SDK for Godot.
+# NEAR SDK for Godot
+A lightweight NEAR SDK for the Godot game engine.
