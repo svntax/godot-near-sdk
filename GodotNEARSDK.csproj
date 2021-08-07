@@ -1,5 +1,9 @@
 <Project Sdk="Godot.NET.Sdk/3.3.0">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NSec.Cryptography" Version="19.5.0" />
+  </ItemGroup>
 </Project>

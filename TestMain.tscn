@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://TestMain.gd" type="Script" id=1]
+[ext_resource path="res://addons/godot-near-sdk/utils/CryptoHelper.cs" type="Script" id=2]
 
 [node name="TestMain" type="Control"]
 script = ExtResource( 1 )
@@ -39,6 +40,9 @@ text = "Clear"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="CryptoHelperTest" type="Node" parent="."]
+script = ExtResource( 2 )
 
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
