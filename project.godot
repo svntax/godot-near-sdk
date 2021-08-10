@@ -8,6 +8,22 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Reference",
+"class": "NearConnection",
+"language": "GDScript",
+"path": "res://addons/godot-near-sdk/NearConnection.gd"
+}, {
+"base": "Reference",
+"class": "WalletConnection",
+"language": "GDScript",
+"path": "res://addons/godot-near-sdk/WalletConnection.gd"
+} ]
+_global_script_class_icons={
+"NearConnection": "",
+"WalletConnection": ""
+}
+
 [application]
 
 config/name="GodotNEARSDK"

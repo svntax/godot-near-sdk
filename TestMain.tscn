@@ -44,5 +44,24 @@ __meta__ = {
 [node name="CryptoHelperTest" type="Node" parent="."]
 script = ExtResource( 2 )
 
+[node name="InvalidMethodButton" type="Button" parent="."]
+margin_left = 40.0
+margin_top = 128.0
+margin_right = 192.0
+margin_bottom = 176.0
+text = "Invalid method call"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="InvalidAccountButton" type="Button" parent="."]
+margin_left = 48.0
+margin_top = 192.0
+margin_right = 193.0
+margin_bottom = 232.0
+text = "Invalid account call"
+
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
+[connection signal="pressed" from="InvalidMethodButton" to="." method="_on_InvalidMethodButton_pressed"]
+[connection signal="pressed" from="InvalidAccountButton" to="." method="_on_InvalidAccountButton_pressed"]
