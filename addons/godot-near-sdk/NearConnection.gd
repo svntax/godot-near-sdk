@@ -20,7 +20,3 @@ func get_node_url() -> String:
 
 func get_wallet_url() -> String:
 	return wallet_url
-
-func login(public_key: String, contract: String) -> void:
-	# TODO
-	pass

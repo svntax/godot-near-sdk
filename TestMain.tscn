@@ -61,7 +61,25 @@ margin_right = 193.0
 margin_bottom = 232.0
 text = "Invalid account call"
 
+[node name="LoginButton" type="Button" parent="."]
+margin_left = 408.0
+margin_top = 24.0
+margin_right = 496.0
+margin_bottom = 56.0
+text = "Sign In"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="UserLabel" type="Label" parent="."]
+margin_left = 520.0
+margin_top = 24.0
+margin_right = 768.0
+margin_bottom = 60.0
+text = "Not signed in"
+
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
 [connection signal="pressed" from="InvalidMethodButton" to="." method="_on_InvalidMethodButton_pressed"]
 [connection signal="pressed" from="InvalidAccountButton" to="." method="_on_InvalidAccountButton_pressed"]
+[connection signal="pressed" from="LoginButton" to="." method="_on_LoginButton_pressed"]

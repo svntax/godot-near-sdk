@@ -8,8 +8,10 @@ func start_connection(config: Dictionary) -> NearConnection:
 	near_connection = NearConnection.new(config)
 	return near_connection
 
-func call_view_method(account_id: String, method_name: String) -> String:
+func call_view_method(account_id: String, method_name: String, args: Dictionary = {}) -> String:
 	assert(near_connection != null)
+	
+	# TODO: encode args to base64
 	
 	var data_to_send = {
 		"jsonrpc": "2.0",
@@ -58,43 +60,6 @@ func call_view_method(account_id: String, method_name: String) -> String:
 	var string_result = byte_array.get_string_from_utf8()
 	return string_result
 
-#func test_get_levels() -> String:
-#	var data_to_send = {
-#		"jsonrpc": "2.0",
-#		"id": "dontcare",
-#		"method": "query",
-#		"params": {
-#			"request_type": "call_function",
-#			"finality": "final",
-#			"account_id": "levels-browsing.svntax.testnet",
-#			"method_name": "getLevels",
-#			"args_base64": "e30="
-#		}
-#	}
-#	var query = JSON.print(data_to_send)
-#	var url = "https://rpc.testnet.near.org"
-#	var headers = ["Content-Type: application/json"]
-#	var use_ssl = false
-#	http.request(url, headers, use_ssl, HTTPClient.METHOD_POST, query)
-#
-#	# [result, status code, response headers, body]
-#	var response = yield(http, "request_completed")
-#	if response[0] != OK:
-#		push_error("An error occurred in the HTTP request.")
-#		return
-#
-#	var body = response[3]
-#	var json = JSON.parse(body.get_string_from_utf8())
-#	if json.error != OK:
-#		push_error("Error when parsing JSON.")
-#		return
-#
-#	# https://docs.near.org/docs/api/rpc#call-a-contract-function
-#	# The json returned has an array of bytes called "result", convert this to a string
-#	# Note: first result var is from JSONParseResult.result, the next two are from NEAR
-#	var json_result = json.result
-#	var rpc_result = json_result.result
-#	var result_bytes = rpc_result.result
-#	var byte_array = PoolByteArray(result_bytes)
-#	var string_result = byte_array.get_string_from_utf8()
-#	return string_result
+func call_change_method(account_id: String, method_name: String) -> void:
+	# TODO: stub, attached gas and deposit parameters
+	pass
