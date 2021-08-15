@@ -1,11 +1,24 @@
 extends Node
 
 var crypto_helper_script = load("res://addons/godot-near-sdk/utils/CryptoHelper.cs")
-var crypto_helper = crypto_helper_script.new()
 
 func create_keypair() -> Dictionary:
-	# TODO: byte[][] not returned properly when converting from C# to GDScript
-	var pair = crypto_helper.CreateKeyPair()
+	var crypto_helper = crypto_helper_script.new()
+	crypto_helper.CreateKeyPair()
+	var public_key_bytes = crypto_helper.publicKey
+	var private_key_bytes = crypto_helper.privateKey
+	
+	# TODO: convert keys to NEAR-compatible strings through base58 encoding
+	
+	var output = ""
+	for b in public_key_bytes:
+		output += str(b) + ","
+	print("Public key GDScript: " + output)
+	output = ""
+	for b in private_key_bytes:
+		output += str(b) + ","
+	print("Private key GDScript: " + output)
+	
 	var keypair = {
 		"public_key": "",
 		"private_key": ""

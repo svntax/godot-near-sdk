@@ -4,6 +4,6 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NSec.Cryptography" Version="20.2.0" />
+    <PackageReference Include="Rebex.Elliptic.Ed25519" Version="1.2.1" />
   </ItemGroup>
 </Project>

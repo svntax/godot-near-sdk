@@ -16,7 +16,7 @@ func get_account_id() -> String:
 func sign_in(contract_id: String) -> void:
 	var keypair = CryptoProxy.create_keypair()
 	var targetUrl = _near_connection.wallet_url + LOGIN_WALLET_URL_SUFFIX
-	targetUrl += "?contract_key=" + contract_id
+	targetUrl += "?contract_id=" + contract_id
 	targetUrl += "&public_key=ed25519:" + keypair.get("public_key")
 	print(targetUrl)
 	#OS.shell_open(targetUrl)
