@@ -13,9 +13,11 @@ func _init(near_connection: NearConnection):
 func get_account_id() -> String:
 	return account_id
 
-func sign_in() -> void:
-	# TODO search parameters: contract_id (name of contract), public_key (ed25519 public key)
+func sign_in(contract_id: String) -> void:
+	var keypair = CryptoProxy.create_keypair()
 	var targetUrl = _near_connection.wallet_url + LOGIN_WALLET_URL_SUFFIX
+	targetUrl += "?contract_key=" + contract_id
+	targetUrl += "&public_key=ed25519:" + keypair.get("public_key")
 	print(targetUrl)
 	#OS.shell_open(targetUrl)
 

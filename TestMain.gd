@@ -33,4 +33,5 @@ func _on_InvalidAccountButton_pressed():
 func _on_LoginButton_pressed():
 	if wallet_connection == null:
 		wallet_connection = WalletConnection.new(Near.near_connection)
-	wallet_connection.sign_in()
+	# TODO: need a smart contract for testing purposes
+	wallet_connection.sign_in("some-contract.testnet")

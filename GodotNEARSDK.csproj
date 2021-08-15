@@ -4,6 +4,6 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NSec.Cryptography" Version="19.5.0" />
+    <PackageReference Include="NSec.Cryptography" Version="20.2.0" />
   </ItemGroup>
 </Project>

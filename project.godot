@@ -33,6 +33,7 @@ config/icon="res://icon.png"
 [autoload]
 
 Near="*res://addons/godot-near-sdk/Near.tscn"
+CryptoProxy="*res://addons/godot-near-sdk/utils/CryptoProxy.gd"
 
 [physics]
 

@@ -1,6 +1,6 @@
 using Godot;
 using System;
-using NSec.Cryptography; // Note: using version 19.5.0 due to a libsodium versioning issue with 20.2.0
+using NSec.Cryptography;
 
 public class CryptoHelper : Node {
 
@@ -23,6 +23,28 @@ public class CryptoHelper : Node {
         if(algorithm.Verify(key.PublicKey, data, signature)){
             GD.Print("Verified data using Ed25519.");
         }
+    }
+
+    public byte[][] CreateKeyPair(){
+        var algorithm = SignatureAlgorithm.Ed25519;
+        var creationParameters = new KeyCreationParameters
+        {
+            ExportPolicy = KeyExportPolicies.AllowPlaintextArchiving
+        };
+        using Key key = Key.Create(algorithm, creationParameters);
+        byte[][] keypair = new byte[2][];
+        byte[] privateKey = key.Export(KeyBlobFormat.RawPrivateKey);
+        byte[] publicKey = key.Export(KeyBlobFormat.RawPublicKey);
+        keypair[0] = publicKey;
+        keypair[1] = privateKey;
+        for(int i = 0; i < 2; i++){
+            String output = "";
+            for(int j = 0; j < keypair[i].Length; j++){
+                output += keypair[i][j] + ",";
+            }
+            GD.Print(output);
+        }
+        return keypair;
     }
 
 }
