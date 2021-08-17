@@ -13,9 +13,13 @@ var wallet_connection
 
 func _ready():
 	Near.start_connection(config)
+	wallet_connection = WalletConnection.new(Near.near_connection)
+	if wallet_connection.is_signed_in():
+		user_label.text = "Signed in as: " + wallet_connection.get_account_id()
+		# TODO: logout callback
+		$LoginButton.disabled = true
 
 func _on_Button_pressed():
-	#var level_data = yield(Near.test_get_levels(), "completed")
 	var result = yield(Near.call_view_method("levels-browsing.svntax.testnet", "getLevels"), "completed")
 	label.set_text(result)
 

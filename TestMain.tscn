@@ -77,6 +77,9 @@ margin_top = 24.0
 margin_right = 768.0
 margin_bottom = 60.0
 text = "Not signed in"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
