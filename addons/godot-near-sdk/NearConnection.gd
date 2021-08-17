@@ -3,6 +3,8 @@ class_name NearConnection
 
 const USER_DATA_SAVE_PATH = "user://user_data.cfg"
 
+signal user_data_updated()
+
 var network_id: String setget ,get_network_id
 var node_url: String setget ,get_node_url
 var wallet_url: String setget ,get_wallet_url
@@ -33,3 +35,4 @@ func get_wallet_url() -> String:
 
 func save_user_data() -> void:
 	user_config.save(USER_DATA_SAVE_PATH)
+	emit_signal("user_data_updated")
