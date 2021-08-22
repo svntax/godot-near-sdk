@@ -22,10 +22,10 @@ __meta__ = {
 }
 
 [node name="Button" type="Button" parent="."]
-margin_left = 64.0
-margin_top = 64.0
-margin_right = 188.0
-margin_bottom = 109.0
+margin_left = 40.0
+margin_top = 60.0
+margin_right = 192.0
+margin_bottom = 112.0
 text = "View call"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -55,11 +55,14 @@ __meta__ = {
 }
 
 [node name="InvalidAccountButton" type="Button" parent="."]
-margin_left = 48.0
+margin_left = 40.0
 margin_top = 192.0
-margin_right = 193.0
-margin_bottom = 232.0
+margin_right = 192.0
+margin_bottom = 240.0
 text = "Invalid account call"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="LoginButton" type="Button" parent="."]
 margin_left = 408.0
@@ -81,8 +84,41 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="ReadMessageButton" type="Button" parent="."]
+margin_left = 40.0
+margin_top = 256.0
+margin_right = 192.0
+margin_bottom = 304.0
+text = "View Message"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ChangeMessageButton" type="Button" parent="."]
+margin_left = 40.0
+margin_top = 320.0
+margin_right = 192.0
+margin_bottom = 352.0
+text = "Change Message"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MessageInput" type="LineEdit" parent="."]
+margin_left = 40.0
+margin_top = 360.0
+margin_right = 192.0
+margin_bottom = 384.0
+text = "Message here..."
+max_length = 16
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
 [connection signal="pressed" from="InvalidMethodButton" to="." method="_on_InvalidMethodButton_pressed"]
 [connection signal="pressed" from="InvalidAccountButton" to="." method="_on_InvalidAccountButton_pressed"]
 [connection signal="pressed" from="LoginButton" to="." method="_on_LoginButton_pressed"]
+[connection signal="pressed" from="ReadMessageButton" to="." method="_on_ReadMessageButton_pressed"]
+[connection signal="pressed" from="ChangeMessageButton" to="." method="_on_ChangeMessageButton_pressed"]

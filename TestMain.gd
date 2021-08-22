@@ -2,6 +2,7 @@ extends Control
 
 onready var label = $Label
 onready var user_label = $UserLabel
+onready var message_input = $MessageInput
 
 var config = {
 	"network_id": "testnet",
@@ -44,3 +45,19 @@ func _on_LoginButton_pressed():
 		wallet_connection = WalletConnection.new(Near.near_connection)
 	# Test contract has helloWorld(), read(key: string), write(key: string, value: string)
 	wallet_connection.sign_in("dev-1629177227636-26182141504774")
+
+func _on_ReadMessageButton_pressed():
+	var result = yield(Near.call_view_method("dev-1629177227636-26182141504774", \
+		"read", {"key": "message"}), "completed")
+	label.set_text(result)
+
+func _on_ChangeMessageButton_pressed():
+	var input_text = message_input.text
+	message_input.clear()
+	message_input.editable = false
+	
+	# TODO: yield until complete
+	wallet_connection.call_change_method("dev-1629177227636-26182141504774", \
+		"write", {"key": "message", "value": input_text})
+	
+	message_input.editable = true

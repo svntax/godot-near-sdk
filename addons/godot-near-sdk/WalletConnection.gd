@@ -70,3 +70,16 @@ func _check_signed_in() -> void:
 func _on_user_data_updated() -> void:
 	_check_signed_in()
 	emit_signal("user_signed_in", self)
+
+func call_change_method(contract_id: String, method_name: String, args: Dictionary) -> void:
+	if not is_signed_in():
+		push_error("Error calling " + method_name + " on " + contract_id + ": user is not signed in.")
+		return
+	
+	# TODO: stub, attached gas and deposit parameters
+	var args_encoded = "e30="
+	if not args.empty():
+		var args_json_string = JSON.print(args)
+		args_encoded = Marshalls.utf8_to_base64(args_json_string)
+	
+	print("Change method \"" + method_name + "\" on " + contract_id + " with args: " + str(args))
