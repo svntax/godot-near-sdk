@@ -1,3 +1,10 @@
+# https://github.com/xaltaq/GDHTTPServer
+#
+# Copyright (c) 2021 Xaltaq Corporation
+#
+# The following code is a modified work of the code from Xaltaq Corporation,
+# which is licensed under the MIT License.
+
 extends Reference
 
 class Request:
