@@ -11,7 +11,10 @@ func start_connection(config: Dictionary) -> NearConnection:
 func call_view_method(account_id: String, method_name: String, args: Dictionary = {}) -> String:
 	assert(near_connection != null)
 	
-	# TODO: encode args to base64
+	var args_encoded = "e30="
+	if not args.empty():
+		var args_json_string = JSON.print(args)
+		args_encoded = Marshalls.utf8_to_base64(args_json_string)
 	
 	var data_to_send = {
 		"jsonrpc": "2.0",
@@ -22,7 +25,7 @@ func call_view_method(account_id: String, method_name: String, args: Dictionary 
 			"finality": "final",
 			"account_id": account_id,
 			"method_name": method_name,
-			"args_base64": "e30="
+			"args_base64": args_encoded
 		}
 	}
 	var query = JSON.print(data_to_send)
@@ -59,7 +62,3 @@ func call_view_method(account_id: String, method_name: String, args: Dictionary 
 	var byte_array = PoolByteArray(result_bytes)
 	var string_result = byte_array.get_string_from_utf8()
 	return string_result
-
-func call_change_method(account_id: String, method_name: String) -> void:
-	# TODO: stub, attached gas and deposit parameters
-	pass
