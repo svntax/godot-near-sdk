@@ -33,7 +33,6 @@ func save_account_id(account_id: String) -> void:
 		push_error("Error retrieving temporary key pair.")
 
 # Start a local server to capture wallet login
-# https://github.com/xaltaq/GDHTTPServer
 func listen_for_login():
 	stop_login_server()
 	_server = load("res://addons/godot-near-sdk/utils/LoginCapturer.gd").new()

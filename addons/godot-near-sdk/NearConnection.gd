@@ -22,7 +22,7 @@ func _init(config: Dictionary):
 	if dir.file_exists(USER_DATA_SAVE_PATH):
 		var err = user_config.load(USER_DATA_SAVE_PATH)
 		if err != OK:
-			print("Failed to load user data. Error code %s" % err)
+			push_error("Failed to load user data. Error code %s" % err)
 
 func get_network_id() -> String:
 	return network_id

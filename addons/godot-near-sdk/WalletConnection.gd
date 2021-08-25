@@ -4,6 +4,7 @@ class_name WalletConnection
 const LOGIN_WALLET_URL_SUFFIX = "/login/";
 
 signal user_signed_in()
+signal user_signed_out()
 
 var _near_connection: NearConnection
 
@@ -56,8 +57,10 @@ func sign_in(contract_id: String) -> void:
 	OS.shell_open(target_url)
 
 func sign_out() -> void:
-	# TODO
-	pass
+	if _near_connection.user_config.has_section("user"):
+		_near_connection.user_config.erase_section("user")
+		account_id = ""
+		_near_connection.save_user_data()
 
 func is_signed_in() -> bool:
 	_check_signed_in()
@@ -68,12 +71,14 @@ func _check_signed_in() -> void:
 		account_id = _near_connection.user_config.get_value("user", "account_id")
 
 func _on_user_data_updated() -> void:
-	_check_signed_in()
-	emit_signal("user_signed_in", self)
+	if is_signed_in():
+		emit_signal("user_signed_in", self)
+	else:
+		emit_signal("user_signed_out", self)
 
 func call_change_method(contract_id: String, method_name: String, args: Dictionary) -> void:
 	if not is_signed_in():
-		push_error("Error calling " + method_name + " on " + contract_id + ": user is not signed in.")
+		push_error("Error calling '" + method_name + "' on '" + contract_id + "': user is not signed in.")
 		return
 	
 	# TODO: stub, attached gas and deposit parameters
