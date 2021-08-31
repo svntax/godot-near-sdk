@@ -1,4 +1,4 @@
-﻿namespace NearClientUnity.Utilities
+﻿namespace NearClient.Utilities
 {
     public enum KeyType : byte
     {

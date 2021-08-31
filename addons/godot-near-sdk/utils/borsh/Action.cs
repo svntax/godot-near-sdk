@@ -1,11 +1,11 @@
-﻿using NearClientUnity.Utilities;
+﻿using NearClient.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace NearClientUnity{
+namespace NearClient {
     
-    public class Action{
+    public class Action {
 
         public static byte[] FunctionCallByteArray(string methodName, byte[] methodArgs, ulong gas, UInt128 deposit){
             using (var ms = new MemoryStream()){

@@ -5,7 +5,8 @@ using System.Security.Cryptography;
 using Rebex.Security.Cryptography;
 using SimpleBase;
 
-using NearClientUnity.Utilities;
+using NearClient;
+using NearClient.Utilities;
 
 public class CryptoHelper : Node {
 
@@ -17,8 +18,6 @@ public class CryptoHelper : Node {
     }
 
     public void CreateKeyPair(){
-        byte[][] keypair = new byte[2][];
-
         var ed = new Ed25519();
         byte[] publicKeyBytes = ed.GetPublicKey();
         this.publicKey = SimpleBase.Base58.Bitcoin.Encode(publicKeyBytes);
@@ -29,29 +28,11 @@ public class CryptoHelper : Node {
     public string CreateSignedTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string privKey, string pubKey, string blockHash, ulong nonce){
         // First construct and serialize the transaction
         // TODO: gas and deposit handling
-        byte[] serializedAction = NearClientUnity.Action.FunctionCallByteArray(methodName, methodArgs, 20000000, 0);
+        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, 20000000, 0);
         byte[] publicKeyBytes = SimpleBase.Base58.Bitcoin.Decode(pubKey).ToArray();
         byte[] blockHashBytes = SimpleBase.Base58.Bitcoin.Decode(blockHash).ToArray();
 
-        byte[] serializedTx;
-        using (var ms = new MemoryStream()){
-            using (var writer = new NearBinaryWriter(ms)){
-                writer.Write(accountId);
-
-                // Public key
-                writer.Write((byte)0); // Ed25519 key type
-                writer.Write(publicKeyBytes);
-
-                writer.Write(nonce);
-                writer.Write(receiverId);
-                writer.Write(blockHashBytes);
-
-                writer.Write((uint)1); // Only 1 action bundled in this transaction
-                writer.Write(serializedAction);
-
-                serializedTx = ms.ToArray();
-            }
-        }
+        byte[] serializedTx = Transaction.ToByteArray(accountId, receiverId, publicKeyBytes, nonce, blockHashBytes, serializedAction);
 
         // Hash the serialized transaction using sha256
         byte[] serializedTxHash;
@@ -70,12 +51,10 @@ public class CryptoHelper : Node {
         using (var ms = new MemoryStream()){
             using (var writer = new NearBinaryWriter(ms)){
                 // Serialized transaction
-                //writer.Write(Transaction.ToByteArray());
                 writer.Write(serializedTx);
 
                 // Serialized NEAR signature
-                //writer.Write(Signature.ToByteArray());
-                writer.Write((byte)0); // Ed25519 key type
+                writer.Write((byte)KeyType.Ed25519);
                 writer.Write(signatureData);
 
                 signedSerializedTx = ms.ToArray();

@@ -88,6 +88,8 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		push_error("Error calling '" + method_name + "' on '" + contract_id + "': user is not signed in.")
 		return
 	
+	# TODO: handling for when the access key's fee allowance runs out
+	
 	# Get the access key's nonce
 	var public_key = get_public_key()
 	var response = yield(Near.view_access_key(account_id, public_key), "completed")

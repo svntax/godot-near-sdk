@@ -1,4 +1,4 @@
-﻿namespace NearClientUnity
+﻿namespace NearClient
 {
     public enum ActionType : byte
     {

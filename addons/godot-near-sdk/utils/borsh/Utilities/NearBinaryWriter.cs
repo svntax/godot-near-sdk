@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace NearClientUnity.Utilities
+namespace NearClient.Utilities
 {
     public class NearBinaryWriter : IDisposable
     {

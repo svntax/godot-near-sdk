@@ -3,6 +3,7 @@ extends Control
 onready var label = $Label
 onready var user_label = $UserLabel
 onready var message_input = $MessageInput
+onready var change_message_button = $ChangeMessageButton
 onready var login_button = $LoginButton
 onready var view_access_key_button = $ViewAccessKeyButton
 
@@ -78,6 +79,7 @@ func _on_ChangeMessageButton_pressed():
 	var input_text = message_input.text
 	message_input.clear()
 	message_input.editable = false
+	change_message_button.disabled = true
 	
 	var result = yield(wallet_connection.call_change_method("dev-1629177227636-26182141504774", \
 		"write", {"key": "message", "value": input_text}), "completed")
@@ -88,6 +90,7 @@ func _on_ChangeMessageButton_pressed():
 		label.set_text(JSON.print(result.status) + JSON.print(result.transaction))
 	
 	message_input.editable = true
+	change_message_button.disabled = false
 
 func _on_BlockButton_pressed():
 	var result = yield(Near.block_query_latest(), "completed")
