@@ -13,8 +13,8 @@ __meta__ = {
 margin_left = 216.0
 margin_top = 80.0
 margin_right = 704.0
-margin_bottom = 448.0
-rect_min_size = Vector2( 424, 304 )
+margin_bottom = 552.0
+rect_min_size = Vector2( 488, 472 )
 text = "Result string"
 autowrap = true
 __meta__ = {
@@ -115,6 +115,20 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="BlockButton" type="Button" parent="."]
+margin_left = 40.0
+margin_top = 448.0
+margin_right = 192.0
+margin_bottom = 488.0
+text = "Get latest block"
+
+[node name="ViewAccessKeyButton" type="Button" parent="."]
+margin_left = 40.0
+margin_top = 512.0
+margin_right = 192.0
+margin_bottom = 552.0
+text = "View access key"
+
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
 [connection signal="pressed" from="InvalidMethodButton" to="." method="_on_InvalidMethodButton_pressed"]
@@ -122,3 +136,5 @@ __meta__ = {
 [connection signal="pressed" from="LoginButton" to="." method="_on_LoginButton_pressed"]
 [connection signal="pressed" from="ReadMessageButton" to="." method="_on_ReadMessageButton_pressed"]
 [connection signal="pressed" from="ChangeMessageButton" to="." method="_on_ChangeMessageButton_pressed"]
+[connection signal="pressed" from="BlockButton" to="." method="_on_BlockButton_pressed"]
+[connection signal="pressed" from="ViewAccessKeyButton" to="." method="_on_ViewAccessKeyButton_pressed"]
