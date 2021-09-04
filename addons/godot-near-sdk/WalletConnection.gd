@@ -83,7 +83,8 @@ func _on_user_data_updated() -> void:
 	else:
 		emit_signal("user_signed_out", self)
 
-func call_change_method(contract_id: String, method_name: String, args: Dictionary) -> Dictionary:
+func call_change_method(contract_id: String, method_name: String, args: Dictionary, \
+		gas: int = Near.DEFAULT_FUNCTION_CALL_GAS) -> Dictionary:
 	if not is_signed_in():
 		push_error("Error calling '" + method_name + "' on '" + contract_id + "': user is not signed in.")
 		return
@@ -100,7 +101,10 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		access_key_nonce = response.nonce
 		access_key_nonce += 1
 	
-	# TODO: attached gas and deposit parameters
+	var gas_amount: int = clamp(gas, 0, Near.MAX_GAS)
+	
+	# TODO: deposit parameter
+	
 	var args_encoded = "e30="
 	if not args.empty():
 		var args_json_string = JSON.print(args)
@@ -109,7 +113,7 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 	
 	var signed_transaction = yield(CryptoProxy.create_signed_transaction(
 		account_id, contract_id, method_name, args_bytes, \
-		get_private_key(), get_public_key(), access_key_nonce), "completed")
+		get_private_key(), get_public_key(), access_key_nonce, gas_amount), "completed")
 	
 	var data_to_send = {
 		"jsonrpc": "2.0",

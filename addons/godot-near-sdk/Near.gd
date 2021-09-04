@@ -1,5 +1,8 @@
 extends Node
 
+const MAX_GAS = 300000000000000 # 300 TGas
+const DEFAULT_FUNCTION_CALL_GAS = 30000000000000 # 30 Tgas
+
 onready var http = $HTTPRequest
 
 var near_connection: NearConnection

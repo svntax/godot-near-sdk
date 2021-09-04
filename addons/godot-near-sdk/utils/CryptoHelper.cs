@@ -25,10 +25,10 @@ public class CryptoHelper : Node {
         this.privateKey = SimpleBase.Base58.Bitcoin.Encode(privateKeyBytes);
     }
 
-    public string CreateSignedTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string privKey, string pubKey, string blockHash, ulong nonce){
+    public string CreateSignedTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string privKey, string pubKey, string blockHash, ulong nonce, ulong gas){
         // First construct and serialize the transaction
-        // TODO: gas and deposit handling
-        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, 20000000, 0);
+        // TODO: deposit handling
+        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, gas, 0);
         byte[] publicKeyBytes = SimpleBase.Base58.Bitcoin.Decode(pubKey).ToArray();
         byte[] blockHashBytes = SimpleBase.Base58.Bitcoin.Decode(blockHash).ToArray();
 
