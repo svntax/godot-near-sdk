@@ -9,6 +9,7 @@ signal user_signed_out()
 var _near_connection: NearConnection
 
 var account_id: String setget ,get_account_id
+var access_key_nonce: int
 
 func _init(near_connection: NearConnection):
 	_near_connection = near_connection
@@ -17,6 +18,12 @@ func _init(near_connection: NearConnection):
 
 func get_account_id() -> String:
 	return account_id
+
+func get_private_key() -> String:
+	return _near_connection.user_config.get_value("user", "private_key", "")
+
+func get_public_key() -> String:
+	return _near_connection.user_config.get_value("user", "public_key", "")
 
 func sign_in(contract_id: String) -> void:
 	if is_signed_in():
@@ -76,15 +83,51 @@ func _on_user_data_updated() -> void:
 	else:
 		emit_signal("user_signed_out", self)
 
-func call_change_method(contract_id: String, method_name: String, args: Dictionary) -> void:
+func call_change_method(contract_id: String, method_name: String, args: Dictionary, \
+		gas: int = Near.DEFAULT_FUNCTION_CALL_GAS) -> Dictionary:
 	if not is_signed_in():
 		push_error("Error calling '" + method_name + "' on '" + contract_id + "': user is not signed in.")
 		return
 	
-	# TODO: stub, attached gas and deposit parameters
+	# TODO: handling for when the access key's fee allowance runs out
+	
+	# Get the access key's nonce
+	var public_key = get_public_key()
+	var response = yield(Near.view_access_key(account_id, public_key), "completed")
+	if response.has("error"):
+		push_error("Failed to view access key: " + response.error.message)
+		return
+	else:
+		access_key_nonce = response.nonce
+		access_key_nonce += 1
+	
+	var gas_amount: int = clamp(gas, 0, Near.MAX_GAS)
+	
+	# TODO: deposit parameter
+	
 	var args_encoded = "e30="
 	if not args.empty():
 		var args_json_string = JSON.print(args)
 		args_encoded = Marshalls.utf8_to_base64(args_json_string)
+	var args_bytes = Marshalls.base64_to_raw(args_encoded)
 	
-	print("Change method \"" + method_name + "\" on " + contract_id + " with args: " + str(args))
+	var signed_transaction = yield(CryptoProxy.create_signed_transaction(
+		account_id, contract_id, method_name, args_bytes, \
+		get_private_key(), get_public_key(), access_key_nonce, gas_amount), "completed")
+	
+	var data_to_send = {
+		"jsonrpc": "2.0",
+		"id": "dontcare",
+		"method": "broadcast_tx_commit",
+		"params": [
+			signed_transaction
+		]
+	}
+	var query = JSON.print(data_to_send)
+	var url = _near_connection.node_url
+	var headers = ["Content-Type: application/json"]
+	var use_ssl = false
+	
+	var rpc_result = yield(Near.query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query), "completed")
+	
+	return rpc_result
