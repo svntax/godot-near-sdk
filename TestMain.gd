@@ -81,8 +81,11 @@ func _on_ChangeMessageButton_pressed():
 	message_input.editable = false
 	change_message_button.disabled = true
 	
+	var attached_deposit = 0 #10
+	
 	var result = yield(wallet_connection.call_change_method("dev-1629177227636-26182141504774", \
-		"write", {"key": "message", "value": input_text}), "completed")
+		"write", {"key": "message", "value": input_text}, \
+		Near.DEFAULT_FUNCTION_CALL_GAS, attached_deposit), "completed")
 	
 	if result.has("error"):
 		label.set_text(result.error.message)

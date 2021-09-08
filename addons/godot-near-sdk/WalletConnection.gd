@@ -1,7 +1,8 @@
 extends Reference
 class_name WalletConnection
 
-const LOGIN_WALLET_URL_SUFFIX = "/login/";
+const LOGIN_WALLET_URL_SUFFIX = "/login/"
+const TX_SIGNING_URL_SUFFIX = "/sign"
 
 signal user_signed_in()
 signal user_signed_out()
@@ -84,7 +85,7 @@ func _on_user_data_updated() -> void:
 		emit_signal("user_signed_out", self)
 
 func call_change_method(contract_id: String, method_name: String, args: Dictionary, \
-		gas: int = Near.DEFAULT_FUNCTION_CALL_GAS) -> Dictionary:
+		gas: int = Near.DEFAULT_FUNCTION_CALL_GAS, deposit: int = 0) -> Dictionary:
 	if not is_signed_in():
 		push_error("Error calling '" + method_name + "' on '" + contract_id + "': user is not signed in.")
 		return
@@ -103,31 +104,57 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 	
 	var gas_amount: int = clamp(gas, 0, Near.MAX_GAS)
 	
-	# TODO: deposit parameter
-	
 	var args_encoded = "e30="
 	if not args.empty():
 		var args_json_string = JSON.print(args)
 		args_encoded = Marshalls.utf8_to_base64(args_json_string)
 	var args_bytes = Marshalls.base64_to_raw(args_encoded)
 	
-	var signed_transaction = yield(CryptoProxy.create_signed_transaction(
-		account_id, contract_id, method_name, args_bytes, \
-		get_private_key(), get_public_key(), access_key_nonce, gas_amount), "completed")
+	var encoded_transaction
 	
-	var data_to_send = {
-		"jsonrpc": "2.0",
-		"id": "dontcare",
-		"method": "broadcast_tx_commit",
-		"params": [
-			signed_transaction
-		]
-	}
-	var query = JSON.print(data_to_send)
-	var url = _near_connection.node_url
-	var headers = ["Content-Type: application/json"]
-	var use_ssl = false
-	
-	var rpc_result = yield(Near.query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query), "completed")
-	
-	return rpc_result
+	# TODO: Godot doesn't have 128-bit integers. Use NEAR instead of yoctoNEAR
+	# units through some helper function for handling attached deposit.
+	if deposit > 0:
+		# Function call access keys cannot send tokens. Redirect to wallet url
+		# with an unsigned encoded transaction.
+		encoded_transaction = yield(CryptoProxy.create_transaction(
+			account_id, contract_id, method_name, args_bytes, \
+			get_public_key(), access_key_nonce, gas_amount, deposit), "completed")
+		
+		var target_url = _near_connection.wallet_url + TX_SIGNING_URL_SUFFIX
+		target_url += "?transactions=" + encoded_transaction.http_escape()
+		if OS.has_feature("JavaScript"):
+			# TODO: url parameters fix pending on Godot 3.4
+			pass
+		else:
+			var callback_url = "http://" + CryptoProxy.BIND_ADDRESS + ":" + str(CryptoProxy.port)
+			target_url += "&callbackUrl=" + callback_url.http_escape()
+		print(target_url)
+		return {
+			"error": {
+				"message": "Transaction pending..."
+			}
+		}
+		# TODO: local server to capture transaction hash url parameter
+	else:
+		# Create a signed, encoded transaction to send using the JSON RPC endpoint.
+		encoded_transaction = yield(CryptoProxy.create_signed_transaction(
+			account_id, contract_id, method_name, args_bytes, \
+			get_private_key(), get_public_key(), access_key_nonce, gas_amount, deposit), "completed")
+		
+		var data_to_send = {
+			"jsonrpc": "2.0",
+			"id": "dontcare",
+			"method": "broadcast_tx_commit",
+			"params": [
+				encoded_transaction
+			]
+		}
+		var query = JSON.print(data_to_send)
+		var url = _near_connection.node_url
+		var headers = ["Content-Type: application/json"]
+		var use_ssl = false
+		
+		var rpc_result = yield(Near.query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query), "completed")
+		
+		return rpc_result

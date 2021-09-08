@@ -18,9 +18,28 @@ func create_keypair() -> Dictionary:
 	}
 	return keypair
 
-func create_signed_transaction(account_id: String, receiver_id: String, \
+func create_transaction(account_id: String, receiver_id: String, \
 		method_name: String, args: PoolByteArray, \
-		private_key: String, public_key: String, nonce: int, gas: int) -> String:
+		public_key: String, nonce: int, gas: int, deposit: int) -> String:
+	
+	var block = yield(Near.block_query_latest(), "completed")
+	if block.has("error"):
+		push_error("Failed to get latest block.")
+		return ""
+	
+	var block_hash = block.header.hash
+
+	var crypto_helper = crypto_helper_script.new()
+	var transaction: String = crypto_helper.CreateTransaction(
+		account_id, receiver_id, method_name, args, public_key, \
+		block_hash, nonce, gas, deposit
+	)
+	
+	return transaction
+
+func create_signed_transaction(account_id: String, receiver_id: String, \
+		method_name: String, args: PoolByteArray, private_key: String, \
+		public_key: String, nonce: int, gas: int, deposit: int) -> String:
 	
 	var block = yield(Near.block_query_latest(), "completed")
 	if block.has("error"):
@@ -32,7 +51,7 @@ func create_signed_transaction(account_id: String, receiver_id: String, \
 	var crypto_helper = crypto_helper_script.new()
 	var signed_transaction: String = crypto_helper.CreateSignedTransaction(
 		account_id, receiver_id, method_name, args, private_key, public_key, \
-		block_hash, nonce, gas
+		block_hash, nonce, gas, deposit
 	)
 	
 	return signed_transaction

@@ -25,10 +25,21 @@ public class CryptoHelper : Node {
         this.privateKey = SimpleBase.Base58.Bitcoin.Encode(privateKeyBytes);
     }
 
-    public string CreateSignedTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string privKey, string pubKey, string blockHash, ulong nonce, ulong gas){
+    public string CreateTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string pubKey, string blockHash, ulong nonce, ulong gas, ulong deposit){
+        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, gas, deposit);
+        byte[] publicKeyBytes = SimpleBase.Base58.Bitcoin.Decode(pubKey).ToArray();
+        byte[] blockHashBytes = SimpleBase.Base58.Bitcoin.Decode(blockHash).ToArray();
+
+        byte[] serializedTx = Transaction.ToByteArray(accountId, receiverId, publicKeyBytes, nonce, blockHashBytes, serializedAction);
+
+        string base64EncodedTx = Convert.ToBase64String(serializedTx);
+
+        return base64EncodedTx;
+    }
+
+    public string CreateSignedTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string privKey, string pubKey, string blockHash, ulong nonce, ulong gas, ulong deposit){
         // First construct and serialize the transaction
-        // TODO: deposit handling
-        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, gas, 0);
+        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, gas, deposit);
         byte[] publicKeyBytes = SimpleBase.Base58.Bitcoin.Decode(pubKey).ToArray();
         byte[] blockHashBytes = SimpleBase.Base58.Bitcoin.Decode(blockHash).ToArray();
 
