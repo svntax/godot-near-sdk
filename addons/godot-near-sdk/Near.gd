@@ -7,9 +7,8 @@ onready var http = $HTTPRequest
 
 var near_connection: NearConnection
 
-func start_connection(config: Dictionary) -> NearConnection:
+func start_connection(config: Dictionary) -> void:
 	near_connection = NearConnection.new(config)
-	return near_connection
 
 func call_view_method(account_id: String, method_name: String, args: Dictionary = {}) -> Dictionary:
 	assert(near_connection != null)

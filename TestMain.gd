@@ -6,6 +6,8 @@ onready var message_input = $MessageInput
 onready var change_message_button = $ChangeMessageButton
 onready var login_button = $LoginButton
 onready var view_access_key_button = $ViewAccessKeyButton
+onready var donation_label = $DonationLabel
+onready var donation_slider = $DonationSlider
 
 var config = {
 	"network_id": "testnet",
@@ -94,7 +96,7 @@ func _on_ChangeMessageButton_pressed():
 	message_input.editable = false
 	change_message_button.disabled = true
 	
-	var attached_deposit = 0
+	var attached_deposit = donation_slider.value
 	
 	var result = yield(wallet_connection.call_change_method("dev-1629177227636-26182141504774", \
 		"write", {"key": "message", "value": input_text}, \
@@ -131,3 +133,6 @@ func _on_ViewAccessKeyButton_pressed():
 			label.set_text(JSON.print(result.error))
 	else:
 		label.set_text(JSON.print(result))
+
+func _on_DonationSlider_value_changed(value):
+	donation_label.set_text("Donation\n(yoctoNEAR): " + str(value))

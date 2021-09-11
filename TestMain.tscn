@@ -117,17 +117,42 @@ __meta__ = {
 
 [node name="BlockButton" type="Button" parent="."]
 margin_left = 40.0
-margin_top = 448.0
+margin_top = 480.0
 margin_right = 192.0
-margin_bottom = 488.0
+margin_bottom = 520.0
 text = "Get latest block"
 
 [node name="ViewAccessKeyButton" type="Button" parent="."]
 margin_left = 40.0
-margin_top = 512.0
+margin_top = 536.0
 margin_right = 192.0
-margin_bottom = 552.0
+margin_bottom = 576.0
 text = "View access key"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="DonationSlider" type="HSlider" parent="."]
+margin_left = 40.0
+margin_top = 432.0
+margin_right = 192.0
+margin_bottom = 448.0
+rect_min_size = Vector2( 152, 16 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="DonationLabel" type="Label" parent="."]
+margin_left = 40.0
+margin_top = 400.0
+margin_right = 192.0
+margin_bottom = 432.0
+rect_min_size = Vector2( 152, 32 )
+text = "Donation
+(yoctoNEAR): 0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
@@ -138,3 +163,4 @@ text = "View access key"
 [connection signal="pressed" from="ChangeMessageButton" to="." method="_on_ChangeMessageButton_pressed"]
 [connection signal="pressed" from="BlockButton" to="." method="_on_BlockButton_pressed"]
 [connection signal="pressed" from="ViewAccessKeyButton" to="." method="_on_ViewAccessKeyButton_pressed"]
+[connection signal="value_changed" from="DonationSlider" to="." method="_on_DonationSlider_value_changed"]
