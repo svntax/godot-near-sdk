@@ -2,6 +2,8 @@ extends Node
 
 var crypto_helper_script = load("res://addons/godot-near-sdk/utils/CryptoHelper.cs")
 
+signal transaction_hash_response(tx_hash)
+
 var _server
 var port = 3560
 const BIND_ADDRESS = "127.0.0.1"
@@ -70,16 +72,27 @@ func save_account_id(account_id: String) -> void:
 	else:
 		push_error("Error retrieving temporary key pair.")
 
+func receive_transaction_hash(tx_hash: String) -> void:
+	emit_signal("transaction_hash_response", tx_hash)
+
 # Start a local server to capture wallet login
 func listen_for_login():
-	stop_login_server()
+	stop_server()
 	_server = load("res://addons/godot-near-sdk/utils/LoginCapturer.gd").new()
-	# TODO: search for open ports
+	# TODO: search for open ports if default is unavailable
 	var err = _server.listen(port, BIND_ADDRESS)
 	if err == OK:
 		pass
 
-func stop_login_server() -> void:
+func listen_for_change_call():
+	stop_server()
+	_server = load("res://addons/godot-near-sdk/utils/ChangeCallCapturer.gd").new()
+	# TODO: search for open ports if default is unavailable
+	var err = _server.listen(port, BIND_ADDRESS)
+	if err == OK:
+		pass
+
+func stop_server() -> void:
 	if _server:
 		_server.stop()
 		_server = null

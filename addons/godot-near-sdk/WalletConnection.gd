@@ -6,6 +6,7 @@ const TX_SIGNING_URL_SUFFIX = "/sign"
 
 signal user_signed_in()
 signal user_signed_out()
+signal transaction_hash_received(tx_hash)
 
 var _near_connection: NearConnection
 
@@ -54,7 +55,7 @@ func sign_in(contract_id: String) -> void:
 #        """)
 #		target_url += "&success_url=" + current_url
 #		target_url += "&failure_url=" + current_url
-		# TODO: add temporary handling by manually asking for the account id
+		# TODO?: add temporary handling by manually asking for the account id
 		pass
 	else:
 		target_url += "&success_url=http://" + CryptoProxy.BIND_ADDRESS + ":" + str(CryptoProxy.port)
@@ -129,13 +130,13 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		else:
 			var callback_url = "http://" + CryptoProxy.BIND_ADDRESS + ":" + str(CryptoProxy.port)
 			target_url += "&callbackUrl=" + callback_url.http_escape()
+			CryptoProxy.listen_for_change_call()
+			CryptoProxy.connect("transaction_hash_response", self, "_on_transaction_hash_received")
+		
 		print(target_url)
-		return {
-			"error": {
-				"message": "Transaction pending..."
-			}
-		}
-		# TODO: local server to capture transaction hash url parameter
+		OS.shell_open(target_url)
+		
+		return { "message": "Transaction pending..." }
 	else:
 		# Create a signed, encoded transaction to send using the JSON RPC endpoint.
 		encoded_transaction = yield(CryptoProxy.create_signed_transaction(
@@ -158,3 +159,6 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		var rpc_result = yield(Near.query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query), "completed")
 		
 		return rpc_result
+
+func _on_transaction_hash_received(tx_hash: String) -> void:
+	emit_signal("transaction_hash_received", tx_hash)
