@@ -30,7 +30,7 @@ func _on_user_signed_in(wallet: WalletConnection):
 	login_button.text = "Sign Out"
 	view_access_key_button.disabled = false
 
-func _on_user_signed_out(wallet: WalletConnection):
+func _on_user_signed_out(_wallet: WalletConnection):
 	user_label.text = "Not signed in"
 	login_button.text = "Sign In"
 	view_access_key_button.disabled = true
@@ -41,7 +41,10 @@ func _on_tx_hash_received(tx_hash: String) -> void:
 func _on_Button_pressed():
 	var result = yield(Near.call_view_method("dev-1629177227636-26182141504774", "helloWorld"), "completed")
 	if result.has("error"):
-		label.set_text(result.error.message)
+		if result.error.has("message"):
+			label.set_text(result.error.message)
+		else:
+			label.set_text(JSON.print(result.error))
 	else:
 		label.set_text(result.data)
 
@@ -51,14 +54,17 @@ func _on_ClearButton_pressed():
 func _on_InvalidMethodButton_pressed():
 	var result = yield(Near.call_view_method("dev-1629177227636-26182141504774", "blank"), "completed")
 	if result.has("error"):
-		label.set_text(result.error.message)
+		if result.error.has("message"):
+			label.set_text(result.error.message)
+		else:
+			label.set_text(JSON.print(result.error))
 	else:
 		label.set_text(result.data)
 
 func _on_InvalidAccountButton_pressed():
 	var result = yield(Near.call_view_method("blank.dev-1629177227636-26182141504774", "blank"), "completed")
 	if result.has("error"):
-		label.set_text(result.error.message)
+		label.set_text(JSON.print(result.error))
 	else:
 		label.set_text(result.data)
 
@@ -75,7 +81,10 @@ func _on_ReadMessageButton_pressed():
 	var result = yield(Near.call_view_method("dev-1629177227636-26182141504774", \
 		"read", {"key": "message"}), "completed")
 	if result.has("error"):
-		label.set_text(result.error.message)
+		if result.error.has("message"):
+			label.set_text(result.error.message)
+		else:
+			label.set_text(JSON.print(result.error))
 	else:
 		label.set_text(result.data)
 
@@ -92,7 +101,10 @@ func _on_ChangeMessageButton_pressed():
 		Near.DEFAULT_FUNCTION_CALL_GAS, attached_deposit), "completed")
 	
 	if result.has("error"):
-		label.set_text(result.error.message)
+		if result.error.has("message"):
+			label.set_text(result.error.message)
+		else:
+			label.set_text(JSON.print(result.error))
 	elif result.has("message"):
 		label.set_text(result.message)
 	else:
@@ -113,6 +125,9 @@ func _on_ViewAccessKeyButton_pressed():
 	var public_key = wallet_connection.get_public_key()
 	var result = yield(Near.view_access_key(account_id, public_key), "completed")
 	if result.has("error"):
-		label.set_text(result.error.message)
+		if result.error.has("message"):
+			label.set_text(result.error.message)
+		else:
+			label.set_text(JSON.print(result.error))
 	else:
 		label.set_text(JSON.print(result))

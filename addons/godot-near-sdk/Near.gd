@@ -95,14 +95,14 @@ func query_rpc(url: String, headers: Array, use_ssl: bool, method: int, query: S
 	if response[0] != OK:
 		var message = "An error occurred in the HTTP request."
 		push_error(message)
-		return _create_error_response(message)
+		return create_error_response(message)
 	
 	var body = response[3]
 	var json = JSON.parse(body.get_string_from_utf8())
 	if json.error != OK:
 		var message = "Error when parsing JSON response."
 		push_error(message)
-		return _create_error_response(message)
+		return create_error_response(message)
 
 	var json_result = json.result
 	if json_result.has("error"):
@@ -110,17 +110,17 @@ func query_rpc(url: String, headers: Array, use_ssl: bool, method: int, query: S
 		var message = error.message + " " + str(error.code) + ": " + error.cause.name
 		message += "\n" + JSON.print(error.cause.info)
 		push_error(message)
-		return _create_error_response(message)
+		return json_result
 	
 	var rpc_result = json_result.result
 	if rpc_result.has("error"):
 		push_error(rpc_result.error)
-		return _create_error_response(rpc_result.error)
+		return create_error_response(rpc_result.error)
 	
 	return rpc_result
 
 # Format for error messages
-func _create_error_response(message: String) -> Dictionary:
+func create_error_response(message: String) -> Dictionary:
 	return {
 		"error": {
 			"message": message

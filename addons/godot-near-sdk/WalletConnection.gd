@@ -88,8 +88,9 @@ func _on_user_data_updated() -> void:
 func call_change_method(contract_id: String, method_name: String, args: Dictionary, \
 		gas: int = Near.DEFAULT_FUNCTION_CALL_GAS, deposit: int = 0) -> Dictionary:
 	if not is_signed_in():
-		push_error("Error calling '" + method_name + "' on '" + contract_id + "': user is not signed in.")
-		return
+		var error_message = "Error calling '" + method_name + "' on '" + contract_id + "': user is not signed in."
+		push_error(error_message)
+		return Near.create_error_response(error_message)
 	
 	# TODO: handling for when the access key's fee allowance runs out
 	
@@ -97,8 +98,8 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 	var public_key = get_public_key()
 	var response = yield(Near.view_access_key(account_id, public_key), "completed")
 	if response.has("error"):
-		push_error("Failed to view access key: " + response.error.message)
-		return
+		var error_message = "Failed to view access key: " + response.error.message
+		return response
 	else:
 		access_key_nonce = response.nonce
 		access_key_nonce += 1
@@ -122,6 +123,11 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 			account_id, contract_id, method_name, args_bytes, \
 			get_public_key(), access_key_nonce, gas_amount, deposit), "completed")
 		
+		if encoded_transaction.empty():
+			var error_message = "Error when creating NEAR transaction."
+			push_error(error_message)
+			return Near.create_error_response(error_message)
+		
 		var target_url = _near_connection.wallet_url + TX_SIGNING_URL_SUFFIX
 		target_url += "?transactions=" + encoded_transaction.http_escape()
 		if OS.has_feature("JavaScript"):
@@ -142,6 +148,11 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		encoded_transaction = yield(CryptoProxy.create_signed_transaction(
 			account_id, contract_id, method_name, args_bytes, \
 			get_private_key(), get_public_key(), access_key_nonce, gas_amount, deposit), "completed")
+		
+		if encoded_transaction.empty():
+			var error_message = "Error when creating signed NEAR transaction."
+			push_error(error_message)
+			return Near.create_error_response(error_message)
 		
 		var data_to_send = {
 			"jsonrpc": "2.0",
