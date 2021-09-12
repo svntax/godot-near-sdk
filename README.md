@@ -8,6 +8,7 @@ A lightweight NEAR SDK for the Godot game engine.
 
 ## Getting Started
 (**NOTE**: A critical fix to HTML5 exports affecting the SDK will be released in Godot 3.4. In the meantime, this project uses Godot 3.3.3 without HTML5 export support.)
+
 Download the C# Mono version of Godot 3.3.3. Then either clone this repository and import the project, or just copy the `addons/godot-near-sdk` directory into your own project's `addons` directory.
 
 ### Connect to NEAR
