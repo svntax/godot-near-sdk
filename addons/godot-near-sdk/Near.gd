@@ -35,7 +35,10 @@ func call_view_method(account_id: String, method_name: String, args: Dictionary 
 	var headers = ["Content-Type: application/json"]
 	var use_ssl = false
 	
-	var rpc_result = yield(query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query), "completed")
+	var rpc_result = query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query)
+	
+	if rpc_result is GDScriptFunctionState:
+		rpc_result = yield(rpc_result, "completed")
 	
 	if rpc_result.has("error"):
 		return rpc_result
@@ -61,7 +64,10 @@ func block_query_latest() -> Dictionary:
 	var headers = ["Content-Type: application/json"]
 	var use_ssl = false
 	
-	var rpc_result = yield(query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query), "completed")
+	var rpc_result = query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query)
+	
+	if rpc_result is GDScriptFunctionState:
+		rpc_result = yield(rpc_result, "completed")
 	
 	return rpc_result
 
@@ -82,7 +88,10 @@ func view_access_key(account_id: String, public_key: String) -> Dictionary:
 	var headers = ["Content-Type: application/json"]
 	var use_ssl = false
 	
-	var rpc_result = yield(query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query), "completed")
+	var rpc_result = query_rpc(url, headers, use_ssl, HTTPClient.METHOD_POST, query)
+	
+	if rpc_result is GDScriptFunctionState:
+		rpc_result = yield(rpc_result, "completed")
 	
 	return rpc_result
 

@@ -41,7 +41,9 @@ func _on_tx_hash_received(tx_hash: String) -> void:
 	label.set_text("Transaction hash: " + tx_hash)
 
 func _on_Button_pressed():
-	var result = yield(Near.call_view_method("dev-1629177227636-26182141504774", "helloWorld"), "completed")
+	var result = Near.call_view_method("dev-1629177227636-26182141504774", "helloWorld")
+	if result is GDScriptFunctionState:
+		result = yield(result, "completed")
 	if result.has("error"):
 		if result.error.has("message"):
 			label.set_text(result.error.message)
@@ -54,7 +56,9 @@ func _on_ClearButton_pressed():
 	label.set_text("")
 
 func _on_InvalidMethodButton_pressed():
-	var result = yield(Near.call_view_method("dev-1629177227636-26182141504774", "blank"), "completed")
+	var result = Near.call_view_method("dev-1629177227636-26182141504774", "blank")
+	if result is GDScriptFunctionState:
+		result = yield(result, "completed")
 	if result.has("error"):
 		if result.error.has("message"):
 			label.set_text(result.error.message)
@@ -64,7 +68,9 @@ func _on_InvalidMethodButton_pressed():
 		label.set_text(result.data)
 
 func _on_InvalidAccountButton_pressed():
-	var result = yield(Near.call_view_method("blank.dev-1629177227636-26182141504774", "blank"), "completed")
+	var result = Near.call_view_method("blank.dev-1629177227636-26182141504774", "blank")
+	if result is GDScriptFunctionState:
+		result = yield(result, "completed")
 	if result.has("error"):
 		label.set_text(JSON.print(result.error))
 	else:
@@ -80,8 +86,10 @@ func _on_LoginButton_pressed():
 		wallet_connection.sign_in("dev-1629177227636-26182141504774")
 
 func _on_ReadMessageButton_pressed():
-	var result = yield(Near.call_view_method("dev-1629177227636-26182141504774", \
-		"read", {"key": "message"}), "completed")
+	var result = Near.call_view_method("dev-1629177227636-26182141504774", \
+		"read", {"key": "message"})
+	if result is GDScriptFunctionState:
+		result = yield(result, "completed")
 	if result.has("error"):
 		if result.error.has("message"):
 			label.set_text(result.error.message)
@@ -98,9 +106,12 @@ func _on_ChangeMessageButton_pressed():
 	
 	var attached_deposit = donation_slider.value
 	
-	var result = yield(wallet_connection.call_change_method("dev-1629177227636-26182141504774", \
+	var result = wallet_connection.call_change_method("dev-1629177227636-26182141504774", \
 		"write", {"key": "message", "value": input_text}, \
-		Near.DEFAULT_FUNCTION_CALL_GAS, attached_deposit), "completed")
+		Near.DEFAULT_FUNCTION_CALL_GAS, attached_deposit)
+	
+	if result is GDScriptFunctionState:
+		result = yield(result, "completed")
 	
 	if result.has("error"):
 		if result.error.has("message"):
@@ -116,7 +127,9 @@ func _on_ChangeMessageButton_pressed():
 	change_message_button.disabled = false
 
 func _on_BlockButton_pressed():
-	var result = yield(Near.block_query_latest(), "completed")
+	var result = Near.block_query_latest()
+	if result is GDScriptFunctionState:
+		result = yield(result, "completed")
 	if result.has("error"):
 		label.set_text("Failed to get latest block.")
 	else:
@@ -125,7 +138,9 @@ func _on_BlockButton_pressed():
 func _on_ViewAccessKeyButton_pressed():
 	var account_id = wallet_connection.account_id
 	var public_key = wallet_connection.get_public_key()
-	var result = yield(Near.view_access_key(account_id, public_key), "completed")
+	var result = Near.view_access_key(account_id, public_key)
+	if result is GDScriptFunctionState:
+		result = yield(result, "completed")
 	if result.has("error"):
 		if result.error.has("message"):
 			label.set_text(result.error.message)

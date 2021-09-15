@@ -119,9 +119,12 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 	if deposit > 0:
 		# Function call access keys cannot send tokens. Redirect to wallet url
 		# with an unsigned encoded transaction.
-		encoded_transaction = yield(CryptoProxy.create_transaction(
+		encoded_transaction = CryptoProxy.create_transaction(
 			account_id, contract_id, method_name, args_bytes, \
-			get_public_key(), access_key_nonce, gas_amount, deposit), "completed")
+			get_public_key(), access_key_nonce, gas_amount, deposit)
+		
+		if encoded_transaction is GDScriptFunctionState:
+			encoded_transaction = yield(encoded_transaction, "completed")
 		
 		if encoded_transaction.empty():
 			var error_message = "Error when creating NEAR transaction."
@@ -145,9 +148,12 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		return { "message": "Transaction pending..." }
 	else:
 		# Create a signed, encoded transaction to send using the JSON RPC endpoint.
-		encoded_transaction = yield(CryptoProxy.create_signed_transaction(
+		encoded_transaction = CryptoProxy.create_signed_transaction(
 			account_id, contract_id, method_name, args_bytes, \
-			get_private_key(), get_public_key(), access_key_nonce, gas_amount, deposit), "completed")
+			get_private_key(), get_public_key(), access_key_nonce, gas_amount, deposit)
+		
+		if encoded_transaction is GDScriptFunctionState:
+			encoded_transaction = yield(encoded_transaction, "completed")
 		
 		if encoded_transaction.empty():
 			var error_message = "Error when creating signed NEAR transaction."

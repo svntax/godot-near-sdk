@@ -4,9 +4,11 @@ var crypto_helper_script = load("res://addons/godot-near-sdk/utils/CryptoHelper.
 
 signal transaction_hash_response(tx_hash)
 
+const BIND_ADDRESS = "127.0.0.1"
+const PORTS_RANGE_CHECK = 10 # Number of ports to check max
+const DEFAULT_PORT = 3560
 var _server
 var port = 3560
-const BIND_ADDRESS = "127.0.0.1"
 
 func create_keypair() -> Dictionary:
 	var crypto_helper = crypto_helper_script.new()
@@ -79,18 +81,34 @@ func receive_transaction_hash(tx_hash: String) -> void:
 func listen_for_login():
 	stop_server()
 	_server = load("res://addons/godot-near-sdk/utils/LoginCapturer.gd").new()
-	# TODO: search for open ports if default is unavailable
-	var err = _server.listen(port, BIND_ADDRESS)
-	if err == OK:
-		pass
+	_start_local_http_server()
 
+# Start a local server to capture transaction hashes
 func listen_for_change_call():
 	stop_server()
 	_server = load("res://addons/godot-near-sdk/utils/ChangeCallCapturer.gd").new()
-	# TODO: search for open ports if default is unavailable
+	_start_local_http_server()
+
+func _start_local_http_server() -> void:
 	var err = _server.listen(port, BIND_ADDRESS)
-	if err == OK:
-		pass
+	if err == ERR_ALREADY_IN_USE:
+		var success = false
+		for i in range(PORTS_RANGE_CHECK):
+			port += 1
+			err = _server.listen(port, BIND_ADDRESS)
+			if err == OK:
+				success = true
+				break
+			elif err == ERR_ALREADY_IN_USE:
+				continue
+			else:
+				success = false
+				push_error("Error code " + err + ": Error while scanning for available ports.")
+				break
+		if not success:
+			push_error("Failed to find available port.")
+	elif err != OK:
+		push_error("Error code " + err + ": Error while creating local server.")
 
 func stop_server() -> void:
 	if _server:
