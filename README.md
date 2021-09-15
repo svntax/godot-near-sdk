@@ -67,7 +67,9 @@ The return value will have a "data" field with a decoded string of the return va
 If an error occurs, the return value will contain an "error" field.
 ```
 # View method without args
-var result = yield(Near.call_view_method("example-contract.testnet", "someMethod"), "completed")
+var result = Near.call_view_method("example-contract.testnet", "someMethod")
+if result is GDScriptFunctionState:
+    result = yield(result, "completed")
 if result.has("error"):
     pass # Error handling here
 else:
@@ -76,7 +78,9 @@ else:
 ```
 ```
 # View method with args
-var result = yield(Near.call_view_method("example-contract.testnet", "someMethodWithArgs", {"arg1": "value1"}), "completed")
+var result = Near.call_view_method("example-contract.testnet", "someMethodWithArgs", {"arg1": "value1"})
+if result is GDScriptFunctionState:
+    result = yield(result, "completed")
 if result.has("error"):
     pass # Error handling here
 else:
@@ -103,7 +107,9 @@ func _on_tx_hash_received(tx_hash: String):
 ```
 ```
 # Calling the change method
-var result = yield(wallet_connection.call_change_method("example-contract.testnet", "someMethod", {}, gas_amount, deposit_amount), "completed")
+var result = wallet_connection.call_change_method("example-contract.testnet", "someMethod", {}, gas_amount, deposit_amount)
+if result is GDScriptFunctionState:
+    result = yield(result, "completed")
 if result.has("error"):
     pass # Error handling here
 elif result.has("message"):
@@ -113,4 +119,4 @@ else:
 ```
 
 ## Notes
-- Once Godot 4.0 is out, the SDK will need to be updated due to changes to coroutines and the replacement of `yield` with `await`.
+- Once Godot 4.0 is out, the SDK will need to be updated due to changes to coroutines and the replacement of `yield` with `await`. In the meantime, any calls to `call_change_method()` and `call_view_method()` require checking if the return value is a GDScriptFunctionState, and if so, yield until completed.
