@@ -120,3 +120,4 @@ else:
 
 ## Notes
 - Once Godot 4.0 is out, the SDK will need to be updated due to changes to coroutines and the replacement of `yield` with `await`. In the meantime, any calls to `call_change_method()` and `call_view_method()` require checking if the return value is a GDScriptFunctionState, and if so, yield until completed.
+- There is no handling for nonce collisions when sending change call transactions due to relying on the `data` field from the error returned, which is considered legacy and may be deprecated (see https://docs.near.org/docs/api/rpc/transactions#what-could-go-wrong-1 for more info.)
