@@ -114,10 +114,7 @@ func _on_ChangeMessageButton_pressed():
 		result = yield(result, "completed")
 	
 	if result.has("error"):
-		if result.error.has("message"):
-			label.set_text(result.error.message)
-		else:
-			label.set_text(JSON.print(result.error))
+		label.set_text(JSON.print(result.error))
 	elif result.has("message"):
 		label.set_text(result.message)
 	else:
