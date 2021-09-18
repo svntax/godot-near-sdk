@@ -10,7 +10,7 @@ func _respond(request: Request) -> Response:
 				var tx_hash = param.trim_prefix("transactionHashes=")
 				response_message = "Transaction hash: " + tx_hash + "\nYou may now close this window."
 				CryptoProxy.receive_transaction_hash(tx_hash)
-				CryptoProxy.stop_server()
+		CryptoProxy.stop_server()
 	
 	var body := PoolByteArray()
 	body.append_array(response_message.to_ascii())

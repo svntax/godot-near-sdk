@@ -9,7 +9,7 @@ func _respond(request: Request) -> Response:
 				var account_id = param.trim_prefix("account_id=")
 				response_message = "Signed in as: " + account_id + "\nYou may now close this window."
 				CryptoProxy.save_account_id(account_id)
-				CryptoProxy.stop_server()
+		CryptoProxy.stop_server()
 	
 	var body := PoolByteArray()
 	body.append_array(response_message.to_ascii())

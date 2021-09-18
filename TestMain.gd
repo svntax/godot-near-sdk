@@ -117,6 +117,8 @@ func _on_ChangeMessageButton_pressed():
 		label.set_text(JSON.print(result.error))
 	elif result.has("message"):
 		label.set_text(result.message)
+	elif result.has("warning"):
+		label.set_text(result.warning)
 	else:
 		label.set_text(JSON.print(result.status) + JSON.print(result.transaction))
 	

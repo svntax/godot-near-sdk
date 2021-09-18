@@ -42,7 +42,9 @@ func sign_in(contract_id: String) -> void:
 	if is_signed_in():
 		emit_signal("user_signed_in", self)
 		return
-	
+	_sign_in_process(contract_id)
+
+func _sign_in_process(contract_id: String) -> void:
 	var keypair = CryptoProxy.create_keypair()
 	var config = _near_connection.user_config
 	config.set_value("temp", "public_key", keypair.get("public_key"))
@@ -103,7 +105,19 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		push_error(error_message)
 		return Near.create_error_response(error_message)
 	
-	# TODO: handling for when the access key's fee allowance runs out
+	# If the user's access key is low on allowance, request a new one
+	var enough_allowance = _has_enough_allowance()
+	if enough_allowance is GDScriptFunctionState:
+		enough_allowance = yield(enough_allowance, "completed")
+	if enough_allowance is Dictionary:
+		# Error occurred when trying to check the allowance
+		return enough_allowance
+	else:
+		if not enough_allowance:
+			_sign_in_process(contract_id)
+			return {
+				"warning": "NotEnoughAllowance"
+			}
 	
 	# Get the access key's nonce
 	var public_key = get_public_key()
