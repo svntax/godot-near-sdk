@@ -11,6 +11,7 @@ using NearClient.Utilities;
 public class CryptoHelper : Node {
 
     public const int NEAR_NOMINATION_EXP = 24;
+    public const float MINIMUM_REQUIRED_ALLOWANCE = 0.05F;
 
     public string publicKey;
     public string privateKey;
@@ -39,6 +40,12 @@ public class CryptoHelper : Node {
         }
 		string yoctoString = wholePart + fracPart.PadRight(NEAR_NOMINATION_EXP, '0');
 		return UInt128.Parse(yoctoString);
+    }
+
+    public bool CheckEnoughAllowance(string allowance){
+        UInt128 allowanceValue = UInt128.Parse(allowance);
+        UInt128 minimumRequiredAllowance = nearToYocto(MINIMUM_REQUIRED_ALLOWANCE);
+        return allowanceValue >= minimumRequiredAllowance;
     }
 
     public string CreateTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string pubKey, string blockHash, ulong nonce, ulong gas, float deposit){

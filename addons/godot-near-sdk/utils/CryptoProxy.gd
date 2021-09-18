@@ -77,6 +77,10 @@ func save_account_id(account_id: String) -> void:
 func receive_transaction_hash(tx_hash: String) -> void:
 	emit_signal("transaction_hash_response", tx_hash)
 
+func is_enough_allowance(allowance: String) -> bool:
+	var crypto_helper = crypto_helper_script.new()
+	return crypto_helper.CheckEnoughAllowance(allowance)
+
 # Start a local server to capture wallet login
 func listen_for_login():
 	stop_server()

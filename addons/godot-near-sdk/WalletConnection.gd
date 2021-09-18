@@ -27,6 +27,17 @@ func get_private_key() -> String:
 func get_public_key() -> String:
 	return _near_connection.user_config.get_value("user", "public_key", "")
 
+func _has_enough_allowance():
+	var public_key = get_public_key()
+	var result = Near.view_access_key(account_id, public_key)
+	if result is GDScriptFunctionState:
+		result = yield(result, "completed")
+	if result.has("error"):
+		return result.error
+	else:
+		var allowance: String = result.permission.FunctionCall.allowance
+		return CryptoProxy.is_enough_allowance(allowance)
+
 func sign_in(contract_id: String) -> void:
 	if is_signed_in():
 		emit_signal("user_signed_in", self)
