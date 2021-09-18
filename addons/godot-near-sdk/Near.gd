@@ -1,5 +1,6 @@
 extends Node
 
+# Gas units are in yoctoNEAR
 const MAX_GAS = 300000000000000 # 300 TGas
 const DEFAULT_FUNCTION_CALL_GAS = 30000000000000 # 30 Tgas
 

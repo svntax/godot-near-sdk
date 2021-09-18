@@ -147,4 +147,4 @@ func _on_ViewAccessKeyButton_pressed():
 		label.set_text(JSON.print(result))
 
 func _on_DonationSlider_value_changed(value):
-	donation_label.set_text("Donation\n(yoctoNEAR): " + str(value))
+	donation_label.set_text("Donation\n(NEAR): " + str(value))

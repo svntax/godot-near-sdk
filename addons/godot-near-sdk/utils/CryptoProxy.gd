@@ -24,7 +24,7 @@ func create_keypair() -> Dictionary:
 
 func create_transaction(account_id: String, receiver_id: String, \
 		method_name: String, args: PoolByteArray, \
-		public_key: String, nonce: int, gas: int, deposit: int) -> String:
+		public_key: String, nonce: int, gas: int, deposit: float) -> String:
 	
 	var block = yield(Near.block_query_latest(), "completed")
 	if block.has("error"):
@@ -43,7 +43,7 @@ func create_transaction(account_id: String, receiver_id: String, \
 
 func create_signed_transaction(account_id: String, receiver_id: String, \
 		method_name: String, args: PoolByteArray, private_key: String, \
-		public_key: String, nonce: int, gas: int, deposit: int) -> String:
+		public_key: String, nonce: int, gas: int, deposit: float) -> String:
 	
 	var block = yield(Near.block_query_latest(), "completed")
 	if block.has("error"):

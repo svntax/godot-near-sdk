@@ -86,7 +86,7 @@ func _on_user_data_updated() -> void:
 		emit_signal("user_signed_out", self)
 
 func call_change_method(contract_id: String, method_name: String, args: Dictionary, \
-		gas: int = Near.DEFAULT_FUNCTION_CALL_GAS, deposit: int = 0) -> Dictionary:
+		gas: int = Near.DEFAULT_FUNCTION_CALL_GAS, deposit: float = 0) -> Dictionary:
 	if not is_signed_in():
 		var error_message = "Error calling '" + method_name + "' on '" + contract_id + "': user is not signed in."
 		push_error(error_message)
@@ -114,8 +114,6 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 	
 	var encoded_transaction
 	
-	# TODO: Godot doesn't have 128-bit integers. Use NEAR instead of yoctoNEAR
-	# units through some helper function for handling attached deposit.
 	if deposit > 0:
 		# Function call access keys cannot send tokens. Redirect to wallet url
 		# with an unsigned encoded transaction.

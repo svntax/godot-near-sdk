@@ -10,6 +10,8 @@ using NearClient.Utilities;
 
 public class CryptoHelper : Node {
 
+    public const int NEAR_NOMINATION_EXP = 24;
+
     public string publicKey;
     public string privateKey;
 
@@ -25,8 +27,23 @@ public class CryptoHelper : Node {
         this.privateKey = SimpleBase.Base58.Bitcoin.Encode(privateKeyBytes);
     }
 
-    public string CreateTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string pubKey, string blockHash, ulong nonce, ulong gas, ulong deposit){
-        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, gas, deposit);
+    // Converts a given amount of NEAR to yoctoNEAR units
+    public UInt128 nearToYocto(float amount){
+        string amountAsString = amount.ToString();
+		string[] split = amountAsString.Split(".");
+		string wholePart = split[0];
+		string fracPart = "";
+        // TODO: check if fractional part is too long?
+        if(split.Length == 2){
+            fracPart = split[1];
+        }
+		string yoctoString = wholePart + fracPart.PadRight(NEAR_NOMINATION_EXP, '0');
+		return UInt128.Parse(yoctoString);
+    }
+
+    public string CreateTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string pubKey, string blockHash, ulong nonce, ulong gas, float deposit){
+        UInt128 depositInYoctoNear = nearToYocto(deposit);
+        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, gas, depositInYoctoNear);
         byte[] publicKeyBytes = SimpleBase.Base58.Bitcoin.Decode(pubKey).ToArray();
         byte[] blockHashBytes = SimpleBase.Base58.Bitcoin.Decode(blockHash).ToArray();
 
@@ -37,9 +54,10 @@ public class CryptoHelper : Node {
         return base64EncodedTx;
     }
 
-    public string CreateSignedTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string privKey, string pubKey, string blockHash, ulong nonce, ulong gas, ulong deposit){
+    public string CreateSignedTransaction(string accountId, string receiverId, string methodName, byte[] methodArgs, string privKey, string pubKey, string blockHash, ulong nonce, ulong gas, float deposit){
         // First construct and serialize the transaction
-        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, gas, deposit);
+        UInt128 depositInYoctoNear = nearToYocto(deposit);
+        byte[] serializedAction = NearClient.Action.FunctionCallByteArray(methodName, methodArgs, gas, depositInYoctoNear);
         byte[] publicKeyBytes = SimpleBase.Base58.Bitcoin.Decode(pubKey).ToArray();
         byte[] blockHashBytes = SimpleBase.Base58.Bitcoin.Decode(blockHash).ToArray();
 
