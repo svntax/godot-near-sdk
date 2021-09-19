@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://TestMain.gd" type="Script" id=1]
+[ext_resource path="res://addons/godot-near-sdk/test/TestMain.gd" type="Script" id=1]
 [ext_resource path="res://addons/godot-near-sdk/utils/CryptoHelper.cs" type="Script" id=2]
 
 [node name="TestMain" type="Control"]

@@ -27,7 +27,7 @@ _global_script_class_icons={
 [application]
 
 config/name="GodotNEARSDK"
-run/main_scene="res://TestMain.tscn"
+run/main_scene="res://addons/godot-near-sdk/test/TestMain.tscn"
 config/icon="res://icon.png"
 
 [autoload]
