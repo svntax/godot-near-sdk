@@ -11,7 +11,7 @@ A lightweight NEAR SDK for the Godot game engine.
 
 Download the C# Mono version of Godot 3.3.3. Then either clone this repository and import the project, or just copy the `addons/godot-near-sdk` directory into your own project's `addons` directory.
 
-If you're copying the SDK over, also make sure that your `.csproj` file has the following elements in `<PropertyGroup>` and `<ItemGroup>`:
+If you're copying the SDK over, also add `Near.gd` and `CryptoProxy.gd` as singletons through Godot's AutoLoad, and make sure that your `.csproj` file has the following elements in `<PropertyGroup>` and `<ItemGroup>`:
 ```
 <PropertyGroup>
   <TargetFramework>net472</TargetFramework>
