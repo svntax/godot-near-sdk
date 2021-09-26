@@ -11,6 +11,21 @@ A lightweight NEAR SDK for the Godot game engine.
 
 Download the C# Mono version of Godot 3.3.3. Then either clone this repository and import the project, or just copy the `addons/godot-near-sdk` directory into your own project's `addons` directory.
 
+If you're copying the SDK over, also make sure that your `.csproj` file has the following elements in `<PropertyGroup>` and `<ItemGroup>`:
+```
+<PropertyGroup>
+  <TargetFramework>net472</TargetFramework>
+  <LangVersion>latest</LangVersion>
+  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+</PropertyGroup>
+```
+```
+<ItemGroup>
+  <PackageReference Include="Rebex.Elliptic.Ed25519" Version="1.2.1" />
+  <PackageReference Include="SimpleBase" Version="2.1.0" />
+</ItemGroup>
+```
+
 ### Connect to NEAR
 To start working with NEAR, first you must connect to the NEAR network. Use the global `Near` singleton to call the `start_connection()` method, and pass in a Dictionary with values for the network you want to connect to (mainnet or testnet). You should use testnet until your app or game is production ready.
 ```
