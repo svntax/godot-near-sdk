@@ -147,9 +147,7 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		var target_url = _near_connection.wallet_url + TX_SIGNING_URL_SUFFIX
 		target_url += "?transactions=" + encoded_transaction.http_escape()
 		if OS.has_feature("JavaScript"):
-			var window_location = JavaScript.get_interface("location")
-			var callback_url = window_location.href
-			target_url += "&callbackUrl=" + callback_url.http_escape()
+			pass # No redirects back to the game in web builds
 		else:
 			var callback_url = "http://" + CryptoProxy.BIND_ADDRESS + ":" + str(CryptoProxy.port)
 			target_url += "&callbackUrl=" + callback_url.http_escape()
@@ -159,7 +157,7 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		print(target_url)
 		OS.shell_open(target_url)
 		
-		return { "message": "Transaction pending..." }
+		return { "message": "Transaction sent." }
 	else:
 		# Create a signed, encoded transaction to send using the JSON RPC endpoint.
 		encoded_transaction = CryptoProxy.create_signed_transaction(

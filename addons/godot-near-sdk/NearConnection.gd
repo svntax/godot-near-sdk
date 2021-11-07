@@ -51,11 +51,6 @@ func _init(config: Dictionary):
 						pass
 					else:
 						push_error("Error retrieving temporary key pair.")
-			elif param.begins_with("transactionHashes="):
-				# Note: assumes only 1 transaction hash
-				var tx_hash = param.trim_prefix("transactionHashes=")
-				print(tx_hash)
-				# TODO: what to do after confirming a transaction with a donation?
 			# Clean the url by removing the url query
 			var window_history = JavaScript.get_interface("history")
 			var base_url = window_location.href.substr(window_location.href.find_last("/")).split("?")[0]
