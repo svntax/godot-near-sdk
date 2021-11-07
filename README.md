@@ -106,17 +106,19 @@ To call a smart contract's change methods, use `WalletConnection`'s `call_change
 
 If no deposit is attached (default is zero), the return value will be a Dictionary containing data on the transaction (see https://docs.near.org/docs/api/rpc/transactions#send-transaction-await for more info.)
 
-If a deposit greater than zero is passed in, the user will be redirected to the NEAR web wallet instead to confirm the transaction, and the return value will be a Dictionary containing a "message" field only. In this case, once the user confirms the transaction, the wallet connection will emit a `transaction_hash_received` signal with a string representing the hash of the confirmed transaction.
+If a deposit greater than zero is passed in, the user will be redirected to the NEAR web wallet instead to confirm the transaction, and the return value will be a Dictionary containing a "message" field only. In this case, once the user confirms the transaction, one of the following will happen:
+- **For desktop/mobile builds**: The wallet connection will emit a `transaction_hash_received` signal with the hash of the confirmed transaction as a string.
+- **For web builds**: No signal will be emitted. You'll have to handle what to do next after the transaction yourself.
 
 If the user's access key is low on allowance, the result will contain a "warning" field with a value of "NotEnoughAllowance", and the user will be redirected to sign in again to create a new access key.
 
 If an error occurs, the result will contain an "error" field. 
 ```GDScript
-# Listening for the transaction_hash_received signal
+# Listening for the transaction_hash_received signal (For desktop/mobile)
 wallet_connection.connect("transaction_hash_received", self, "_on_tx_hash_received")
 ```
 ```GDScript
-# Function to handle receiving the transaction hash
+# Function to handle receiving the transaction hash (For desktop/mobile)
 func _on_tx_hash_received(tx_hash: String):
     pass # Your code here
 ```
