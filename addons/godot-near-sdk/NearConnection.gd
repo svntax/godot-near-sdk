@@ -31,26 +31,26 @@ func _init(config: Dictionary):
 		var query_string = window_location.search
 		if query_string.begins_with("?"):
 			query_string = query_string.substr(1)
-		var values = query_string.split("&")
-		for param in values:
-			if param.begins_with("account_id="):
-				var account_id = param.trim_prefix("account_id=")
-				# Move the keys from temporary to stored state and add the account id
-				var public_key = user_config.get_value("temp", "public_key", "")
-				var private_key = user_config.get_value("temp", "private_key", "")
-				if !public_key.empty() and !private_key.empty():
-					user_config.set_value("user", "public_key", public_key)
-					user_config.set_value("user", "private_key", private_key)
-					user_config.set_value("user", "account_id", account_id)
-					user_config.erase_section("temp")
-					save_user_data()
-				else:
-					var prev_account_id = user_config.get_value("user", "account_id", "")
-					if account_id == prev_account_id:
-						# User is already signed in
-						pass
+			var values = query_string.split("&")
+			for param in values:
+				if param.begins_with("account_id="):
+					var account_id = param.trim_prefix("account_id=")
+					# Move the keys from temporary to stored state and add the account id
+					var public_key = user_config.get_value("temp", "public_key", "")
+					var private_key = user_config.get_value("temp", "private_key", "")
+					if !public_key.empty() and !private_key.empty():
+						user_config.set_value("user", "public_key", public_key)
+						user_config.set_value("user", "private_key", private_key)
+						user_config.set_value("user", "account_id", account_id)
+						user_config.erase_section("temp")
+						save_user_data()
 					else:
-						push_error("Error retrieving temporary key pair.")
+						var prev_account_id = user_config.get_value("user", "account_id", "")
+						if account_id == prev_account_id:
+							# User is already signed in
+							pass
+						else:
+							push_error("Error retrieving temporary key pair.")
 			# Clean the url by removing the url query
 			var window_history = JavaScript.get_interface("history")
 			var base_url = window_location.href.substr(window_location.href.find_last("/")).split("?")[0]
