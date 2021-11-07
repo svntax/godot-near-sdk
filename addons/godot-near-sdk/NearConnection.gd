@@ -53,7 +53,7 @@ func _init(config: Dictionary):
 							push_error("Error retrieving temporary key pair.")
 			# Clean the url by removing the url query
 			var window_history = JavaScript.get_interface("history")
-			var base_url = window_location.href.substr(window_location.href.find_last("/")).split("?")[0]
+			var base_url = window_location.href.split("?")[0]
 			window_history.replaceState({}, "", base_url)
 
 func get_network_id() -> String:
