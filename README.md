@@ -7,9 +7,7 @@ A lightweight NEAR SDK for the Godot game engine.
 - Calling change methods on smart contracts.
 
 ## Getting Started
-(**NOTE**: A critical fix to HTML5 exports affecting the SDK will be released in Godot 3.4. In the meantime, this project uses Godot 3.3.4 without HTML5 export support.)
-
-Download the C# Mono version of Godot 3.3.4. Then either clone this repository and import the project, or just copy the `addons/godot-near-sdk` directory into your own project's `addons` directory.
+Download the C# Mono version of Godot 3.4. Then either clone this repository and import the project, or just copy the `addons/godot-near-sdk` directory into your own project's `addons` directory.
 
 If you're copying the SDK over, also add `Near.gd` and `CryptoProxy.gd` as singletons through Godot's AutoLoad, and make sure that your `.csproj` file has the following elements in `<PropertyGroup>` and `<ItemGroup>`:
 ```xml
