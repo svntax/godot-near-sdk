@@ -56,20 +56,10 @@ func _sign_in_process(contract_id: String) -> void:
 	target_url += "&public_key=ed25519:" + keypair.get("public_key")
 	
 	if OS.has_feature("JavaScript"):
-		# TODO: url parameters on web builds cause a 404 error, but in Godot 3.4
-		# this will be fixed.
-		# See https://github.com/godotengine/godot/pull/49889
-		# Furthermore, 3.4 will have a new JavaScriptObject interface that should
-		# be used instead of eval()
-		# See https://github.com/godotengine/godot/pull/48691
-#		var current_url = JavaScript.eval(""" 
-#            var url_string = window.location.href;
-#            url_string;
-#        """)
-#		target_url += "&success_url=" + current_url
-#		target_url += "&failure_url=" + current_url
-		# TODO?: add temporary handling by manually asking for the account id
-		pass
+		var window_location = JavaScript.get_interface("location")
+		var current_url = window_location.href
+		target_url += "&success_url=" + current_url
+		target_url += "&failure_url=" + current_url
 	else:
 		target_url += "&success_url=http://" + CryptoProxy.BIND_ADDRESS + ":" + str(CryptoProxy.port)
 		target_url += "&failure_url=http://" + CryptoProxy.BIND_ADDRESS + ":" + str(CryptoProxy.port)
@@ -157,8 +147,9 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		var target_url = _near_connection.wallet_url + TX_SIGNING_URL_SUFFIX
 		target_url += "?transactions=" + encoded_transaction.http_escape()
 		if OS.has_feature("JavaScript"):
-			# TODO: url parameters fix pending on Godot 3.4
-			pass
+			var window_location = JavaScript.get_interface("location")
+			var callback_url = window_location.href
+			target_url += "&callbackUrl=" + callback_url.http_escape()
 		else:
 			var callback_url = "http://" + CryptoProxy.BIND_ADDRESS + ":" + str(CryptoProxy.port)
 			target_url += "&callbackUrl=" + callback_url.http_escape()

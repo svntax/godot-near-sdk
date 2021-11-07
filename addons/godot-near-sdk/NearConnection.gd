@@ -23,6 +23,43 @@ func _init(config: Dictionary):
 		var err = user_config.load(USER_DATA_SAVE_PATH)
 		if err != OK:
 			push_error("Failed to load user data. Error code %s" % err)
+	
+	# If the NEAR web wallet has redirected the user to this game with a query parameter account_id,
+	# save that id as the current active user.
+	if OS.has_feature("JavaScript"):
+		var window_location = JavaScript.get_interface("location")
+		var query_string = window_location.search
+		if query_string.begins_with("?"):
+			query_string = query_string.substr(1)
+		var values = query_string.split("&")
+		for param in values:
+			if param.begins_with("account_id="):
+				var account_id = param.trim_prefix("account_id=")
+				# Move the keys from temporary to stored state and add the account id
+				var public_key = user_config.get_value("temp", "public_key", "")
+				var private_key = user_config.get_value("temp", "private_key", "")
+				if !public_key.empty() and !private_key.empty():
+					user_config.set_value("user", "public_key", public_key)
+					user_config.set_value("user", "private_key", private_key)
+					user_config.set_value("user", "account_id", account_id)
+					user_config.erase_section("temp")
+					save_user_data()
+				else:
+					var prev_account_id = user_config.get_value("user", "account_id", "")
+					if account_id == prev_account_id:
+						# User is already signed in
+						pass
+					else:
+						push_error("Error retrieving temporary key pair.")
+			elif param.begins_with("transactionHashes="):
+				# Note: assumes only 1 transaction hash
+				var tx_hash = param.trim_prefix("transactionHashes=")
+				print(tx_hash)
+				# TODO: what to do after confirming a transaction with a donation?
+			# Clean the url by removing the url query
+			var window_history = JavaScript.get_interface("history")
+			var base_url = window_location.href.substr(window_location.href.find_last("/")).split("?")[0]
+			window_history.replaceState({}, "", base_url)
 
 func get_network_id() -> String:
 	return network_id
