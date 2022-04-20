@@ -206,7 +206,7 @@ func stop() -> void:
 
 # Call this function directly to run the server in the main thread
 # For debugging purposes only
-func _listen_thread(_null) -> void:
+func _listen_thread() -> void:
 	_server_shutdown = false
 	_take_connections()
 
