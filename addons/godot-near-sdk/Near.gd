@@ -97,7 +97,7 @@ func view_access_key(account_id: String, public_key: String) -> Dictionary:
 	return rpc_result
 
 func query_rpc(url: String, headers: Array, use_ssl: bool, method: int, query: String) -> Dictionary:
-	http.request(url, headers, use_ssl, HTTPClient.METHOD_POST, query)
+	http.request(url, headers, use_ssl, method, query)
 	
 	# [result, status code, response headers, body]
 	var response = yield(http, "request_completed")
