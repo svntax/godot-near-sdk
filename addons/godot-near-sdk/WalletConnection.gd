@@ -11,7 +11,7 @@ var _websocket_client: WebSocketClient
 
 # Intear-specific data
 var intear_wallet_type: int
-var _intear_ws_session_id: String
+var _intear_ws_session_id: String = ""
 var function_call_key_added: bool = false setget ,is_function_call_key_added
 
 var account_id: String setget ,get_account_id
@@ -104,25 +104,42 @@ func _sign_in_with_intear(keypair: Dictionary, contract_id: String = "", method_
 	if OS.has_feature("JavaScript"):
 		_send_intear_login_request()
 	else:
-		_websocket_client = WebSocketClient.new()
-		_websocket_client.connect("connection_closed", self, "_websocket_closed")
-		_websocket_client.connect("connection_error", self, "_websocket_closed")
-		_websocket_client.connect("connection_established", self, "_websocket_connected")
-		_websocket_client.connect("data_received", self, "_websocket_on_data")
+		_start_intear_websocket_connection()
+
+func _start_intear_websocket_connection():
+	if _websocket_client != null:
+		if _websocket_client.is_connected("connection_closed", self, "_websocket_closed"):
+			_websocket_client.disconnect("connection_closed", self, "_websocket_closed")
 		
-		var ws_url = WalletProviders.INTEAR_LOGOUT_BRIDGE_SERVICE_URL + "/api/session/create"
-		var err = _websocket_client.connect_to_url(ws_url, [])
-		if err == OK:
-			Near.websocket_client = _websocket_client
-			Near.set_process(true)
-		else:
-			push_error("Unable to connect")
-			Near.set_process(false)
-			Near.websocket_client = null
+		if _websocket_client.is_connected("connection_error", self, "_websocket_closed"):
+			_websocket_client.disconnect("connection_error", self, "_websocket_closed")
+		
+		if _websocket_client.is_connected("connection_established", self, "_websocket_connected"):
+			_websocket_client.disconnect("connection_established", self, "_websocket_connected")
+		
+		if _websocket_client.is_connected("data_received", self, "_websocket_on_data"):
+			_websocket_client.disconnect("data_received", self, "_websocket_on_data")
+	
+	_websocket_client = WebSocketClient.new()
+	_websocket_client.connect("connection_closed", self, "_websocket_closed")
+	_websocket_client.connect("connection_error", self, "_websocket_closed")
+	_websocket_client.connect("connection_established", self, "_websocket_connected")
+	_websocket_client.connect("data_received", self, "_websocket_on_data")
+	
+	var ws_url = WalletProviders.INTEAR_LOGOUT_BRIDGE_SERVICE_URL + "/api/session/create"
+	var err = _websocket_client.connect_to_url(ws_url, [])
+	if err == OK:
+		Near.websocket_client = _websocket_client
+		Near.set_process(true)
+	else:
+		push_error("Unable to connect")
+		Near.set_process(false)
+		Near.websocket_client = null
 
 func _websocket_closed(was_clean = false):
 	print("Closed, clean: ", was_clean)
 	Near.set_process(false)
+	_intear_ws_session_id = ""
 	emit_signal("websocket_closed")
 
 func _websocket_connected(proto = ""):
@@ -181,7 +198,12 @@ func _send_intear_login_request() -> void:
 			JavaScript.eval("%s = window.open('%s', '_blank', '%s')" % [JS_GODOT_BRIDGE, wallet_url, POPUP_FEATURES])
 			js_window.addEventListener("message", _js_message_callback_ref)
 		elif intear_wallet_type == IntearSelector.WalletType.DESKTOP:
-			OS.shell_open("intear://connect?session_id=" + _intear_ws_session_id)
+			if _intear_ws_session_id.empty():
+				# Selected desktop wallet from web app, so we need to start a new websockets connection
+				_start_intear_websocket_connection()
+			else:
+				_send_intear_ws_sign_in_request()
+				OS.shell_open("intear://connect?session_id=" + _intear_ws_session_id)
 	else:
 		if intear_wallet_type == IntearSelector.WalletType.DESKTOP:
 			_send_intear_ws_sign_in_request()
