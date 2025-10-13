@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Control",
+"class": "IntearSelector",
+"language": "GDScript",
+"path": "res://addons/godot-near-sdk/wallet_selectors/intear_selector.gd"
+}, {
 "base": "Reference",
 "class": "NearConnection",
 "language": "GDScript",
@@ -25,6 +30,7 @@ _global_script_classes=[ {
 "path": "res://addons/godot-near-sdk/WalletProviders.gd"
 } ]
 _global_script_class_icons={
+"IntearSelector": "",
 "NearConnection": "",
 "WalletConnection": "",
 "WalletProviders": ""

@@ -4,10 +4,15 @@ class_name WalletConnection
 signal user_signed_in()
 signal user_signed_out()
 signal transaction_hash_received(tx_hash)
+signal websocket_closed()
 
 var _near_connection: NearConnection
 var _websocket_client: WebSocketClient
+
+# Intear-specific data
+var intear_wallet_type: int
 var _intear_ws_session_id: String
+var function_call_key_added: bool = false setget ,is_function_call_key_added
 
 var account_id: String setget ,get_account_id
 var access_key_nonce: int
@@ -15,7 +20,7 @@ var app_contract_id: String
 var app_contract_method_names: Array
 const JS_GODOT_BRIDGE = "window.godotBridge"
 
-var _js_message_callback_ref = JavaScript.create_callback(self, "_on_ws_message_event")
+var _js_message_callback_ref = JavaScript.create_callback(self, "_on_js_message_event")
 
 func _init(near_connection: NearConnection):
 	_near_connection = near_connection
@@ -33,6 +38,14 @@ func get_app_public_key() -> String:
 
 func get_user_public_key() -> String:
 	return _near_connection.user_config.get_value("user", "user_public_key", "")
+
+func is_function_call_key_added() -> bool:
+	return function_call_key_added
+
+func set_intear_wallet_type(wallet_type: int) -> void:
+	intear_wallet_type = wallet_type
+	if wallet_type == IntearSelector.WalletType.WEB_BETA:
+		_near_connection.wallet_url = "https://staging.wallet.intear.tech"
 
 func _has_enough_allowance():
 	var public_key = get_app_public_key()
@@ -87,7 +100,6 @@ func _sign_in_with_my_near_wallet(keypair: Dictionary, contract_id: String) -> v
 
 func _sign_in_with_intear(keypair: Dictionary, contract_id: String = "", method_names: Array = []) -> void:
 	app_contract_id = contract_id
-	app_contract_method_names.clear()
 	app_contract_method_names = method_names
 	if OS.has_feature("JavaScript"):
 		_send_intear_login_request()
@@ -111,6 +123,7 @@ func _sign_in_with_intear(keypair: Dictionary, contract_id: String = "", method_
 func _websocket_closed(was_clean = false):
 	print("Closed, clean: ", was_clean)
 	Near.set_process(false)
+	emit_signal("websocket_closed")
 
 func _websocket_connected(proto = ""):
 	print("Connected with protocol: ", proto)
@@ -128,10 +141,7 @@ func _websocket_on_data():
 		match response_type:
 			"connected":
 				print("Connected successfully!")
-				# Handle sign in response
-				_near_connection.wallet_url = response.walletUrl # Currently connected wallet origin. Always use this for subsequent requests, since the user might be running on staging.wallet.intear.tech or a self-hosted instance of the wallet, which should be respected
-				var account = response.accounts[0]
-				CryptoProxy.save_account_data(account.accountId, account.publicKey)
+				_handle_intear_sign_in_response(response)
 			"error":
 				if response.has("message"):
 					print(response.get("message"))
@@ -163,22 +173,23 @@ func _generate_intear_sign_in_request(params: Dictionary = {}) -> Dictionary:
 
 func _send_intear_login_request() -> void:
 	if OS.has_feature("JavaScript"):
-		# TODO: select between web wallet, desktop wallet, and mobile wallet
-		var intear_wallet_type = "WEB"
-		if intear_wallet_type == "WEB":
+		if intear_wallet_type in [IntearSelector.WalletType.WEB, IntearSelector.WalletType.WEB_BETA]:
 			var js_window := JavaScript.get_interface("window")
 			# Open popup
 			var POPUP_FEATURES = "opener,width=400,height=700"
 			var wallet_url = _near_connection.wallet_url + "/connect"
 			JavaScript.eval("%s = window.open('%s', '_blank', '%s')" % [JS_GODOT_BRIDGE, wallet_url, POPUP_FEATURES])
 			js_window.addEventListener("message", _js_message_callback_ref)
-		elif intear_wallet_type == "DESKTOP":
+		elif intear_wallet_type == IntearSelector.WalletType.DESKTOP:
 			OS.shell_open("intear://connect?session_id=" + _intear_ws_session_id)
 	else:
-		send_intear_sign_in_request()
-		OS.shell_open("intear://connect?session_id=" + _intear_ws_session_id)
+		if intear_wallet_type == IntearSelector.WalletType.DESKTOP:
+			_send_intear_ws_sign_in_request()
+			OS.shell_open("intear://connect?session_id=" + _intear_ws_session_id)
+		else:
+			push_warning("Only the Intear Desktop Wallet is supported in desktop apps at this time.")
 
-func send_intear_sign_in_request() -> void:
+func _send_intear_ws_sign_in_request() -> void:
 	var sign_in_request: Dictionary = _generate_intear_sign_in_request({
 		"contractId": app_contract_id,
 		"methodNames": app_contract_method_names
@@ -188,7 +199,13 @@ func send_intear_sign_in_request() -> void:
 	_websocket_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 	_websocket_client.get_peer(1).put_packet(packet)
 
-func _on_ws_message_event(args):
+func _handle_intear_sign_in_response(response: Dictionary) -> void:
+	_near_connection.wallet_url = response.walletUrl # Currently connected wallet origin. Always use this for subsequent requests, since the user might be running on staging.wallet.intear.tech or a self-hosted instance of the wallet, which should be respected
+	var account = response.accounts[0]
+	CryptoProxy.save_account_data(account.accountId, account.publicKey)
+	function_call_key_added = response.functionCallKeyAdded
+
+func _on_js_message_event(args):
 	print("Message listener received data:")
 	var js_event = args[0]
 	var js_json = JavaScript.get_interface("JSON")
@@ -241,10 +258,7 @@ func _on_ws_message_event(args):
 				JavaScript.eval("%s.close()" % [JS_GODOT_BRIDGE])
 				var js_window := JavaScript.get_interface("window")
 				js_window.removeEventListener("message", _js_message_callback_ref)
-				# Intear response handling
-				_near_connection.wallet_url = response.walletUrl # Currently connected wallet origin. Always use this for subsequent requests, since the user might be running on staging.wallet.intear.tech or a self-hosted instance of the wallet, which should be respected
-				var account = response.accounts[0]
-				CryptoProxy.save_account_data(account.accountId, account.publicKey)
+				_handle_intear_sign_in_response(response)
 			"error":
 				push_error("Unknown error from connect popup")
 				JavaScript.eval("%s.close()" % [JS_GODOT_BRIDGE])
@@ -258,7 +272,7 @@ func sign_out() -> void:
 		_near_connection.user_config.erase_section("user")
 		account_id = ""
 		app_contract_id = ""
-		app_contract_method_names.clear()
+		app_contract_method_names = []
 		_near_connection.save_user_data()
 		if OS.has_feature("JavaScript"):
 			JavaScript.eval("%s = null;" % JS_GODOT_BRIDGE)
@@ -284,7 +298,14 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 		push_error(error_message)
 		return Near.create_error_response(error_message)
 	
-	# TODO: Prompt for function call key if missing
+	# Prompt for function call key if missing
+	if _near_connection.wallet_provider == WalletProviders.Wallet.INTEAR:
+		if not function_call_key_added:
+			_sign_in_process(contract_id, app_contract_method_names)
+			return {
+				"warning": "No function call key found. Prompting user for new key..."
+			}
+	
 	# If the user's access key is low on allowance, request a new one
 	var enough_allowance = _has_enough_allowance()
 	if enough_allowance is GDScriptFunctionState:

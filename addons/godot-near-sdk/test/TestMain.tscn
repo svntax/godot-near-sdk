@@ -1,10 +1,17 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://addons/godot-near-sdk/test/TestMain.gd" type="Script" id=1]
 [ext_resource path="res://addons/godot-near-sdk/utils/CryptoHelper.cs" type="Script" id=2]
+[ext_resource path="res://addons/godot-near-sdk/wallet_selectors/intear_selector.tscn" type="PackedScene" id=3]
 
 [node name="TestMain" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 script = ExtResource( 1 )
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="Label" type="Label" parent="."]
 margin_left = 216.0
@@ -153,6 +160,27 @@ text = "Donation
 [node name="DesktopWalletOpenWait" type="Timer" parent="."]
 wait_time = 3.0
 one_shot = true
+
+[node name="IntearSelector" parent="." instance=ExtResource( 3 )]
+unique_name_in_owner = true
+visible = false
+close_button_path = NodePath("Control/IntearSelectorClose")
+
+[node name="Control" type="Control" parent="IntearSelector"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 473.0
+margin_bottom = 468.0
+mouse_filter = 2
+
+[node name="IntearSelectorClose" type="Button" parent="IntearSelector/Control"]
+margin_left = 443.0
+margin_top = 0.5
+margin_right = 467.0
+margin_bottom = 24.5
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "X"
 
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]

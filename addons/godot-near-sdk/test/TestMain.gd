@@ -8,11 +8,12 @@ onready var login_button = $LoginButton
 onready var view_access_key_button = $ViewAccessKeyButton
 onready var donation_label = $DonationLabel
 onready var donation_slider = $DonationSlider
+onready var intear_selector = $"%IntearSelector"
 
 var config = {
 	"network_id": "testnet",
 	"node_url": "https://rpc.testnet.fastnear.com",
-	"wallet_provider": WalletProviders.Wallet.INTEAR,
+	"wallet_provider": WalletProviders.Wallet.INTEAR, # TODO: hard-coded to Intear until a proper wallet selector is added
 }
 const CONTRACT_ID: String = "dev-1629177227636-26182141504774"
 const CONTRACT_METHODS: Array = ["write"]
@@ -25,9 +26,11 @@ func _ready():
 	wallet_connection.connect("user_signed_in", self, "_on_user_signed_in")
 	wallet_connection.connect("user_signed_out", self, "_on_user_signed_out")
 	wallet_connection.connect("transaction_hash_received", self, "_on_tx_hash_received")
+	wallet_connection.connect("websocket_closed", self, "_on_wallet_websocket_closed")
+	intear_selector.connect("selector_closed", self, "_on_intear_selector_closed")
 	if wallet_connection.is_signed_in():
 		wallet_connection.app_contract_id = CONTRACT_ID
-		wallet_connection.app_contract_method_names = CONTRACT_METHODS
+		wallet_connection.app_contract_method_names = CONTRACT_METHODS.duplicate()
 		_on_user_signed_in(wallet_connection)
 	view_access_key_button.disabled = !wallet_connection.is_signed_in()
 
@@ -35,11 +38,22 @@ func _on_user_signed_in(wallet: WalletConnection):
 	user_label.text = "Signed in as: " + wallet.account_id
 	login_button.text = "Sign Out"
 	view_access_key_button.disabled = false
+	login_button.disabled = false
+	intear_selector.close()
+	# Note: when using Intear Wallet, it's up to the developer to handle if functionCallKeyAdded was false
 
 func _on_user_signed_out(_wallet: WalletConnection):
 	user_label.text = "Not signed in"
 	login_button.text = "Sign In"
 	view_access_key_button.disabled = true
+
+func _on_wallet_websocket_closed() -> void:
+	# TODO: This doesn't run if the user closed the desktop wallet (did NOT click on Connect nor Cancel)
+	login_button.disabled = false
+	intear_selector.close()
+
+func _on_intear_selector_closed() -> void:
+	login_button.disabled = false
 
 func _on_tx_hash_received(tx_hash: String) -> void:
 	label.set_text("Transaction hash: " + tx_hash)
@@ -86,8 +100,10 @@ func _on_LoginButton_pressed():
 	if wallet_connection.is_signed_in():
 		wallet_connection.sign_out()
 	else:
+		login_button.disabled = true
 		# Test contract has helloWorld(), read(key: string), write(key: string, value: string)
-		wallet_connection.sign_in(CONTRACT_ID, CONTRACT_METHODS)
+		#wallet_connection.sign_in(CONTRACT_ID, CONTRACT_METHODS)
+		intear_selector.open(wallet_connection, CONTRACT_ID, CONTRACT_METHODS)
 
 func _on_ReadMessageButton_pressed():
 	var result = Near.call_view_method(CONTRACT_ID, \
@@ -104,7 +120,6 @@ func _on_ReadMessageButton_pressed():
 
 func _on_ChangeMessageButton_pressed():
 	var input_text = message_input.text
-	message_input.clear()
 	message_input.editable = false
 	change_message_button.disabled = true
 	
