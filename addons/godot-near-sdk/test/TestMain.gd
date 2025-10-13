@@ -11,9 +11,11 @@ onready var donation_slider = $DonationSlider
 
 var config = {
 	"network_id": "testnet",
-	"node_url": "https://rpc.testnet.near.org",
-	"wallet_url": "https://wallet.testnet.near.org",
+	"node_url": "https://rpc.testnet.fastnear.com",
+	"wallet_provider": WalletProviders.Wallet.INTEAR,
 }
+const CONTRACT_ID: String = "dev-1629177227636-26182141504774"
+const CONTRACT_METHODS: Array = ["write"]
 
 var wallet_connection
 
@@ -24,6 +26,8 @@ func _ready():
 	wallet_connection.connect("user_signed_out", self, "_on_user_signed_out")
 	wallet_connection.connect("transaction_hash_received", self, "_on_tx_hash_received")
 	if wallet_connection.is_signed_in():
+		wallet_connection.app_contract_id = CONTRACT_ID
+		wallet_connection.app_contract_method_names = CONTRACT_METHODS
 		_on_user_signed_in(wallet_connection)
 	view_access_key_button.disabled = !wallet_connection.is_signed_in()
 
@@ -41,7 +45,7 @@ func _on_tx_hash_received(tx_hash: String) -> void:
 	label.set_text("Transaction hash: " + tx_hash)
 
 func _on_Button_pressed():
-	var result = Near.call_view_method("dev-1629177227636-26182141504774", "helloWorld")
+	var result = Near.call_view_method(CONTRACT_ID, "helloWorld")
 	if result is GDScriptFunctionState:
 		result = yield(result, "completed")
 	if result.has("error"):
@@ -56,7 +60,7 @@ func _on_ClearButton_pressed():
 	label.set_text("")
 
 func _on_InvalidMethodButton_pressed():
-	var result = Near.call_view_method("dev-1629177227636-26182141504774", "blank")
+	var result = Near.call_view_method(CONTRACT_ID, "blank")
 	if result is GDScriptFunctionState:
 		result = yield(result, "completed")
 	if result.has("error"):
@@ -83,10 +87,10 @@ func _on_LoginButton_pressed():
 		wallet_connection.sign_out()
 	else:
 		# Test contract has helloWorld(), read(key: string), write(key: string, value: string)
-		wallet_connection.sign_in("dev-1629177227636-26182141504774")
+		wallet_connection.sign_in(CONTRACT_ID, CONTRACT_METHODS)
 
 func _on_ReadMessageButton_pressed():
-	var result = Near.call_view_method("dev-1629177227636-26182141504774", \
+	var result = Near.call_view_method(CONTRACT_ID, \
 		"read", {"key": "message"})
 	if result is GDScriptFunctionState:
 		result = yield(result, "completed")
@@ -106,7 +110,7 @@ func _on_ChangeMessageButton_pressed():
 	
 	var attached_deposit = donation_slider.value
 	
-	var result = wallet_connection.call_change_method("dev-1629177227636-26182141504774", \
+	var result = wallet_connection.call_change_method(CONTRACT_ID, \
 		"write", {"key": "message", "value": input_text}, \
 		Near.DEFAULT_FUNCTION_CALL_GAS, attached_deposit)
 	
@@ -136,7 +140,7 @@ func _on_BlockButton_pressed():
 
 func _on_ViewAccessKeyButton_pressed():
 	var account_id = wallet_connection.account_id
-	var public_key = wallet_connection.get_public_key()
+	var public_key = wallet_connection.get_app_public_key()
 	var result = Near.view_access_key(account_id, public_key)
 	if result is GDScriptFunctionState:
 		result = yield(result, "completed")

@@ -7,9 +7,14 @@ const DEFAULT_FUNCTION_CALL_GAS = 30000000000000 # 30 Tgas
 onready var http = $HTTPRequest
 
 var near_connection: NearConnection
+var websocket_client: WebSocketClient
 
 func start_connection(config: Dictionary) -> void:
 	near_connection = NearConnection.new(config)
+
+func _process(delta):
+	if websocket_client:
+		websocket_client.poll()
 
 func call_view_method(account_id: String, method_name: String, args: Dictionary = {}) -> Dictionary:
 	assert(near_connection != null)
@@ -81,7 +86,7 @@ func view_access_key(account_id: String, public_key: String) -> Dictionary:
 			"request_type": "view_access_key",
 			"finality": "final",
 			"account_id": account_id,
-			"public_key": "ed25519:" + public_key
+			"public_key": public_key
 		}
 	}
 	var query = JSON.print(data_to_send)

@@ -5,14 +5,11 @@
 
 [node name="TestMain" type="Control"]
 script = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Label" type="Label" parent="."]
 margin_left = 216.0
 margin_top = 80.0
-margin_right = 704.0
+margin_right = 722.0
 margin_bottom = 552.0
 rect_min_size = Vector2( 488, 472 )
 text = "Result string"
@@ -152,9 +149,10 @@ margin_bottom = 432.0
 rect_min_size = Vector2( 152, 32 )
 text = "Donation
 (NEAR): 0"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+
+[node name="DesktopWalletOpenWait" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
 
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
