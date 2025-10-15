@@ -29,6 +29,7 @@ func _ready():
 	wallet_connection.connect("transaction_hash_received", self, "_on_tx_hash_received")
 	wallet_connection.connect("signed_message_response", self, "_on_signed_message_response")
 	wallet_connection.connect("sent_transactions_response", self, "_on_sent_transactions_response")
+	wallet_connection.connect("error_response", self, "_on_error_response")
 	wallet_connection.connect("websocket_closed", self, "_on_wallet_websocket_closed")
 	intear_selector.connect("selector_closed", self, "_on_intear_selector_closed")
 	if wallet_connection.is_signed_in():
@@ -76,6 +77,10 @@ func _on_signed_message_response(response: Dictionary) -> void:
 
 func _on_sent_transactions_response(response: Dictionary) -> void:
 	result_label.set_text(JSON.print(response, "  "))
+
+func _on_error_response(response: Dictionary) -> void:
+	result_label.set_text(JSON.print(response, "  "))
+	set_enabled_main_buttons(true)
 
 func _on_Button_pressed():
 	var result = Near.call_view_method(CONTRACT_ID, "helloWorld")

@@ -6,6 +6,7 @@ signal user_signed_out()
 signal transaction_hash_received(tx_hash)
 signal signed_message_response(response)
 signal sent_transactions_response(response)
+signal error_response(response)
 signal websocket_closed()
 
 var _near_connection: NearConnection
@@ -187,6 +188,7 @@ func _websocket_on_data():
 				print("Transactions sent successfully!")
 				_handle_intear_send_transactions_response(response)
 			"error":
+				emit_signal("error_response", response)
 				if response.has("message"):
 					print(response.get("message"))
 				else:
@@ -368,7 +370,11 @@ func _on_js_message_event(args):
 				js_window.removeEventListener("message", _js_message_callback_ref)
 				_handle_intear_send_transactions_response(response)
 			"error":
-				push_error("Unknown error from connect popup")
+				emit_signal("error_response", response)
+				if response.has("message"):
+					print(response.get("message"))
+				else:
+					push_error("Unknown error from wallet popup")
 				JavaScript.eval("%s.close()" % [JS_GODOT_BRIDGE])
 				var js_window := JavaScript.get_interface("window")
 				js_window.removeEventListener("message", _js_message_callback_ref)
