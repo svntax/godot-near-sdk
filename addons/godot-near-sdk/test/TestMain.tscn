@@ -48,25 +48,12 @@ __meta__ = {
 [node name="CryptoHelperTest" type="Node" parent="."]
 script = ExtResource( 2 )
 
-[node name="InvalidMethodButton" type="Button" parent="."]
+[node name="SignMessageButton" type="Button" parent="."]
 margin_left = 40.0
 margin_top = 128.0
 margin_right = 192.0
 margin_bottom = 176.0
-text = "Invalid method call"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="InvalidAccountButton" type="Button" parent="."]
-margin_left = 40.0
-margin_top = 192.0
-margin_right = 192.0
-margin_bottom = 240.0
-text = "Invalid account call"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+text = "Sign message"
 
 [node name="LoginButton" type="Button" parent="."]
 margin_left = 408.0
@@ -90,69 +77,54 @@ __meta__ = {
 
 [node name="ReadMessageButton" type="Button" parent="."]
 margin_left = 40.0
-margin_top = 256.0
+margin_top = 192.0
 margin_right = 192.0
-margin_bottom = 304.0
-text = "View Message"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+margin_bottom = 240.0
+text = "View App Message"
 
 [node name="ChangeMessageButton" type="Button" parent="."]
 margin_left = 40.0
-margin_top = 320.0
+margin_top = 256.0
 margin_right = 192.0
-margin_bottom = 352.0
-text = "Change Message"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+margin_bottom = 288.0
+text = "Change App Message"
 
 [node name="MessageInput" type="LineEdit" parent="."]
 margin_left = 40.0
-margin_top = 360.0
+margin_top = 296.0
 margin_right = 192.0
-margin_bottom = 384.0
+margin_bottom = 320.0
 text = "Message here..."
 max_length = 16
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="BlockButton" type="Button" parent="."]
 margin_left = 40.0
-margin_top = 480.0
+margin_top = 416.0
 margin_right = 192.0
-margin_bottom = 520.0
+margin_bottom = 456.0
 text = "Get latest block"
 
 [node name="ViewAccessKeyButton" type="Button" parent="."]
 margin_left = 40.0
-margin_top = 536.0
+margin_top = 472.0
 margin_right = 192.0
-margin_bottom = 576.0
+margin_bottom = 512.0
 text = "View access key"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="DonationSlider" type="HSlider" parent="."]
 margin_left = 40.0
-margin_top = 432.0
+margin_top = 368.0
 margin_right = 192.0
-margin_bottom = 448.0
+margin_bottom = 384.0
 rect_min_size = Vector2( 152, 16 )
 max_value = 1.0
 step = 0.01
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="DonationLabel" type="Label" parent="."]
 margin_left = 40.0
-margin_top = 400.0
+margin_top = 336.0
 margin_right = 192.0
-margin_bottom = 432.0
+margin_bottom = 368.0
 rect_min_size = Vector2( 152, 32 )
 text = "Donation
 (NEAR): 0"
@@ -184,8 +156,7 @@ text = "X"
 
 [connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
-[connection signal="pressed" from="InvalidMethodButton" to="." method="_on_InvalidMethodButton_pressed"]
-[connection signal="pressed" from="InvalidAccountButton" to="." method="_on_InvalidAccountButton_pressed"]
+[connection signal="pressed" from="SignMessageButton" to="." method="_on_SignMessageButton_pressed"]
 [connection signal="pressed" from="LoginButton" to="." method="_on_LoginButton_pressed"]
 [connection signal="pressed" from="ReadMessageButton" to="." method="_on_ReadMessageButton_pressed"]
 [connection signal="pressed" from="ChangeMessageButton" to="." method="_on_ChangeMessageButton_pressed"]
