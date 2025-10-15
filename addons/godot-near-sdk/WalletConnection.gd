@@ -402,14 +402,16 @@ func _intear_web_post_message_sign_message() -> void:
 	JavaScript.eval(eval_string)
 
 func sign_out() -> void:
+	account_id = ""
+	app_contract_id = ""
+	app_contract_method_names = []
+	function_call_key_added = false
+	if OS.has_feature("JavaScript"):
+		JavaScript.eval("%s = null;" % JS_GODOT_BRIDGE)
+	
 	if _near_connection.user_config.has_section("user"):
 		_near_connection.user_config.erase_section("user")
-		account_id = ""
-		app_contract_id = ""
-		app_contract_method_names = []
 		_near_connection.save_user_data()
-		if OS.has_feature("JavaScript"):
-			JavaScript.eval("%s = null;" % JS_GODOT_BRIDGE)
 
 func is_signed_in() -> bool:
 	_check_signed_in()
