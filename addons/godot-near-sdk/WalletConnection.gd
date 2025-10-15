@@ -5,16 +5,19 @@ signal user_signed_in()
 signal user_signed_out()
 signal transaction_hash_received(tx_hash)
 signal signed_message_response(response)
+signal sent_transactions_response(response)
 signal websocket_closed()
 
 var _near_connection: NearConnection
 var _websocket_client: WebSocketClient
 
 # Intear-specific data
+const INTEAR_REQUEST_TYPES = ["connect", "sign-message", "send-transactions"]
 var intear_wallet_type: int
 var _intear_ws_session_id: String = ""
 var _intear_request_type: String
 var _intear_sign_message_request: Dictionary = {}
+var _intear_send_transactions_request: Dictionary = {}
 var function_call_key_added: bool = false setget ,is_function_call_key_added
 
 var account_id: String setget ,get_account_id
@@ -34,10 +37,16 @@ func get_account_id() -> String:
 	return account_id
 
 func get_app_private_key() -> String:
+	var key = _near_connection.user_config.get_value("user", "app_private_key", "")
+	if key.empty():
+		key = _near_connection.user_config.get_value("temp", "private_key", "")
 	return _near_connection.user_config.get_value("user", "app_private_key", "")
 
 func get_app_public_key() -> String:
-	return _near_connection.user_config.get_value("user", "app_public_key", "")
+	var key = _near_connection.user_config.get_value("user", "app_public_key", "")
+	if key.empty():
+		key = _near_connection.user_config.get_value("temp", "public_key", "")
+	return key
 
 func get_user_public_key() -> String:
 	return _near_connection.user_config.get_value("user", "user_public_key", "")
@@ -62,9 +71,6 @@ func _has_enough_allowance():
 	else:
 		var allowance: String = result.permission.FunctionCall.allowance
 		return CryptoProxy.is_enough_allowance(allowance)
-
-func get_login_url_endpoint(wallet: int) -> String:
-	return "/login"
 
 func sign_in(contract_id: String, method_names: Array = []) -> void:
 	if is_signed_in():
@@ -108,7 +114,7 @@ func _sign_in_with_intear(keypair: Dictionary, contract_id: String = "", method_
 	app_contract_method_names = method_names
 	_intear_request_type = "connect"
 	if OS.has_feature("JavaScript"):
-		_send_intear_login_request()
+		_send_intear_request("connect")
 	else:
 		_start_intear_websocket_connection()
 
@@ -152,19 +158,22 @@ func _websocket_closed(was_clean = false):
 
 func _websocket_connected(proto = ""):
 	print("Connected with protocol: ", proto)
+	_websocket_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 
 func _websocket_on_data():
 	var data: String = _websocket_client.get_peer(1).get_packet().get_string_from_utf8()
-	print("Got data from server: ", data)
+	#print("Got data from server: ", data)
 	var response: Dictionary = JSON.parse(data).result
 	if response.has("session_id"):
 		# Response from Intear's session create endpoint
 		_intear_ws_session_id = response.get("session_id")
 		match _intear_request_type:
 			"connect":
-				_send_intear_login_request()
+				_send_intear_request("connect")
 			"sign-message":
-				_send_intear_sign_message_request()
+				_send_intear_request("sign-message")
+			"send-transactions":
+				_send_intear_request("send-transactions")
 	else:
 		var response_type = response.get("type")
 		match response_type:
@@ -174,6 +183,9 @@ func _websocket_on_data():
 			"signed":
 				print("Signed message successfully!")
 				_handle_intear_sign_message_response(response)
+			"sent":
+				print("Transactions sent successfully!")
+				_handle_intear_send_transactions_response(response)
 			"error":
 				if response.has("message"):
 					print(response.get("message"))
@@ -182,7 +194,7 @@ func _websocket_on_data():
 
 func _generate_intear_sign_in_request(params: Dictionary = {}) -> Dictionary:
 	var config = _near_connection.user_config
-	var public_key = config.get_value("temp", "public_key")
+	var public_key = get_app_public_key()
 	var nonce = int(Time.get_unix_time_from_system() * 1000)
 	var origin = ""
 	if OS.has_feature("JavaScript"):
@@ -208,7 +220,7 @@ func _generate_intear_sign_in_request(params: Dictionary = {}) -> Dictionary:
 	}
 	return sign_in_request
 
-func _generate_intear_sign_message_request(params: Dictionary = {}) -> Dictionary:
+func _generate_intear_sign_message_request(params: Dictionary) -> Dictionary:
 	var auth_nonce = int(Time.get_unix_time_from_system() * 1000)
 	var message = params.get("message")
 	var message_payload: Dictionary = CryptoProxy.create_nep413_payload(
@@ -228,36 +240,34 @@ func _generate_intear_sign_message_request(params: Dictionary = {}) -> Dictionar
 	}
 	return sign_message_request
 
-func _send_intear_login_request() -> void:
-	if OS.has_feature("JavaScript"):
-		if intear_wallet_type in [IntearSelector.WalletType.WEB, IntearSelector.WalletType.WEB_BETA]:
-			var js_window := JavaScript.get_interface("window")
-			# Open popup
-			var POPUP_FEATURES = "opener,width=400,height=700"
-			var wallet_url = _near_connection.wallet_url + "/connect"
-			JavaScript.eval("%s = window.open('%s', '_blank', '%s')" % [JS_GODOT_BRIDGE, wallet_url, POPUP_FEATURES])
-			js_window.addEventListener("message", _js_message_callback_ref)
-		elif intear_wallet_type == IntearSelector.WalletType.DESKTOP:
-			if _intear_ws_session_id.empty():
-				# Selected desktop wallet from web app, so we need to start a new websockets connection
-				_start_intear_websocket_connection()
-			else:
-				_send_intear_ws_sign_in_request()
-				OS.shell_open("intear://connect?session_id=" + _intear_ws_session_id)
-	else:
-		if intear_wallet_type == IntearSelector.WalletType.DESKTOP:
-			_send_intear_ws_sign_in_request()
-			OS.shell_open("intear://connect?session_id=" + _intear_ws_session_id)
-		else:
-			push_error("Only the Intear Desktop Wallet is supported in desktop apps at this time.")
+func _generate_intear_send_transactions_request(params: Dictionary) -> Dictionary:
+	var auth_nonce = int(Time.get_unix_time_from_system() * 1000)
+	var transactions: Array = params.get("transactions", [])
+	var transactions_json = JSON.print(transactions)
+	var signature = CryptoProxy.create_intear_send_transactions_signature(auth_nonce, transactions_json) 
+	var send_transactions_request = {
+	  "type": "signAndSendTransactions",
+	  "data": {
+		"accountId": account_id,
+		"publicKey": "ed25519:" + get_app_public_key(),
+		"nonce": auth_nonce,
+		"signature": signature,
+		"transactions": transactions_json
+	  }
+	}
+	return send_transactions_request
 
-func _send_intear_sign_message_request() -> void:
+func _send_intear_request(request_type: String) -> void:
+	if !(request_type in INTEAR_REQUEST_TYPES):
+		push_error("Invalid request type: " + request_type)
+		return
+	
 	if OS.has_feature("JavaScript"):
 		if intear_wallet_type in [IntearSelector.WalletType.WEB, IntearSelector.WalletType.WEB_BETA]:
 			var js_window := JavaScript.get_interface("window")
 			# Open popup
 			var POPUP_FEATURES = "opener,width=400,height=700"
-			var wallet_url = _near_connection.wallet_url + "/sign-message"
+			var wallet_url = _near_connection.wallet_url + "/" + request_type
 			JavaScript.eval("%s = window.open('%s', '_blank', '%s')" % [JS_GODOT_BRIDGE, wallet_url, POPUP_FEATURES])
 			js_window.addEventListener("message", _js_message_callback_ref)
 		elif intear_wallet_type == IntearSelector.WalletType.DESKTOP:
@@ -265,12 +275,22 @@ func _send_intear_sign_message_request() -> void:
 				# Selected desktop wallet from web app, so we need to start a new websockets connection
 				_start_intear_websocket_connection()
 			else:
-				_send_intear_ws_sign_message_request()
-				OS.shell_open("intear://sign-message?session_id=" + _intear_ws_session_id)
+				if request_type == "connect":
+					_send_intear_ws_sign_in_request()
+				elif request_type == "sign-message":
+					_send_intear_ws_sign_message_request()
+				elif request_type == "send-transactions":
+					_send_intear_ws_send_transactions_request()
+				OS.shell_open("intear://%s?session_id=%s" % [request_type, _intear_ws_session_id])
 	else:
 		if intear_wallet_type == IntearSelector.WalletType.DESKTOP:
-			_send_intear_ws_sign_message_request()
-			OS.shell_open("intear://sign-message?session_id=" + _intear_ws_session_id)
+			if request_type == "connect":
+				_send_intear_ws_sign_in_request()
+			elif request_type == "sign-message":
+				_send_intear_ws_sign_message_request()
+			elif request_type == "send-transactions":
+				_send_intear_ws_send_transactions_request()
+			OS.shell_open("intear://%s?session_id=%s" % [request_type, _intear_ws_session_id])
 		else:
 			push_error("Only the Intear Desktop Wallet is supported in desktop apps at this time.")
 
@@ -281,7 +301,6 @@ func _send_intear_ws_sign_in_request() -> void:
 	})
 	var sign_in_request_json = JSON.print(sign_in_request)
 	var packet = sign_in_request_json.to_utf8()
-	_websocket_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 	_websocket_client.get_peer(1).put_packet(packet)
 
 func _handle_intear_sign_in_response(response: Dictionary) -> void:
@@ -296,18 +315,26 @@ func _handle_intear_sign_in_response(response: Dictionary) -> void:
 func _send_intear_ws_sign_message_request() -> void:
 	var sign_message_request_json = JSON.print(_intear_sign_message_request)
 	var packet = sign_message_request_json.to_utf8()
-	_websocket_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 	_websocket_client.get_peer(1).put_packet(packet)
 
 func _handle_intear_sign_message_response(response: Dictionary) -> void:
+	_intear_request_type = ""
 	emit_signal("signed_message_response", response)
 
+func _send_intear_ws_send_transactions_request() -> void:
+	var send_transactions_request_json = JSON.print(_intear_send_transactions_request)
+	var packet = send_transactions_request_json.to_utf8()
+	_websocket_client.get_peer(1).put_packet(packet)
+
+func _handle_intear_send_transactions_response(response: Dictionary) -> void:
+	_intear_request_type = ""
+	emit_signal("sent_transactions_response", response)
+
 func _on_js_message_event(args):
-	print("Message listener received data:")
+	#print("Message listener received data:")
 	var js_event = args[0]
 	var js_json = JavaScript.get_interface("JSON")
 	var json_string = js_json.stringify(js_event.data)
-	print(json_string)
 	var parsed_data = JSON.parse(json_string)
 	if parsed_data.error == OK:
 		var response = parsed_data.result
@@ -318,6 +345,8 @@ func _on_js_message_event(args):
 					_intear_web_post_message_sign_in()
 				elif _intear_request_type == "sign-message":
 					_intear_web_post_message_sign_message()
+				elif _intear_request_type == "send-transactions":
+					_intear_web_post_send_transactions()
 				else:
 					push_error("Invalid request type: " + _intear_request_type)
 			"connected":
@@ -332,6 +361,12 @@ func _on_js_message_event(args):
 				var js_window := JavaScript.get_interface("window")
 				js_window.removeEventListener("message", _js_message_callback_ref)
 				_handle_intear_sign_message_response(response)
+			"sent":
+				print("Transactions sent! Closing wallet popup and removing event listeners...")
+				JavaScript.eval("%s.close()" % [JS_GODOT_BRIDGE])
+				var js_window := JavaScript.get_interface("window")
+				js_window.removeEventListener("message", _js_message_callback_ref)
+				_handle_intear_send_transactions_response(response)
 			"error":
 				push_error("Unknown error from connect popup")
 				JavaScript.eval("%s.close()" % [JS_GODOT_BRIDGE])
@@ -341,13 +376,12 @@ func _on_js_message_event(args):
 		push_error("Error parsing response data as JSON")
 
 func _intear_web_post_message_sign_in() -> void:
-	print("Wallet popup ready. Sending signIn request:")
+	print("Wallet popup ready. Sending signIn request.")
 	var sign_in_request: Dictionary = _generate_intear_sign_in_request({
 		"contractId": app_contract_id,
 		"methodNames": app_contract_method_names
 	})
 	var sign_in_request_json = JSON.print(sign_in_request)
-	print(sign_in_request_json)
 	var data = sign_in_request.get("data")
 	var method_names: Array = data.get("methodNames")
 	var sign_in_request_js = """{
@@ -379,7 +413,7 @@ func _intear_web_post_message_sign_in() -> void:
 	JavaScript.eval(eval_string)
 
 func _intear_web_post_message_sign_message() -> void:
-	print("Wallet popup ready. Sending signMessage request:")
+	print("Wallet popup ready. Sending signMessage request.")
 	var data = _intear_sign_message_request.get("data")
 	var sign_message_request_js = """{
 		"type": "signMessage",
@@ -399,6 +433,29 @@ func _intear_web_post_message_sign_message() -> void:
 	]
 	var target_origin = _near_connection.wallet_url
 	var eval_string = "%s.postMessage(%s, '%s')" % [JS_GODOT_BRIDGE, sign_message_request_js, target_origin]
+	JavaScript.eval(eval_string)
+
+func _intear_web_post_send_transactions() -> void:
+	print("Wallet popup ready. Sending transactions request.")
+	var data = _intear_send_transactions_request.get("data")
+	var send_transactions_request_js = """{
+		"type": "signAndSendTransactions",
+		"data": {
+			"accountId": "%s",
+			"publicKey": "%s",
+			"nonce": %s,
+			"signature": "%s",
+			"transactions": '%s'
+		}
+	}""" % [
+		data.get("accountId"),
+		data.get("publicKey"),
+		data.get("nonce"),
+		data.get("signature"),
+		data.get("transactions")
+	]
+	var target_origin = _near_connection.wallet_url
+	var eval_string = "%s.postMessage(%s, '%s')" % [JS_GODOT_BRIDGE, send_transactions_request_js, target_origin]
 	JavaScript.eval(eval_string)
 
 func sign_out() -> void:
@@ -441,7 +498,7 @@ func sign_message(message: String, recipient: String) -> Dictionary:
 			"message": message, "recipient": recipient
 		})
 		if OS.has_feature("JavaScript"):
-			_send_intear_sign_message_request()
+			_send_intear_request("sign-message")
 		else:
 			_start_intear_websocket_connection()
 		
@@ -451,6 +508,29 @@ func sign_message(message: String, recipient: String) -> Dictionary:
 		push_error(error_message)
 		return Near.create_error_response(error_message)
 
+func send_transactions(transactions: Array) -> Dictionary:
+	if not is_signed_in():
+		var error_message = "User is not signed in."
+		push_error(error_message)
+		return Near.create_error_response(error_message)
+	
+	if _near_connection.wallet_provider == WalletProviders.Wallet.INTEAR:
+		_intear_request_type = "send-transactions"
+		_intear_send_transactions_request = _generate_intear_send_transactions_request({
+			"transactions": transactions
+		})
+		if OS.has_feature("JavaScript"):
+			_send_intear_request("send-transactions")
+		else:
+			_start_intear_websocket_connection()
+		
+		return {"message": "Requesting user to sign and send transactions"}
+	else:
+		var error_message = "Sending transactions is currently supported in Intear Wallet only."
+		push_error(error_message)
+		return Near.create_error_response(error_message)
+
+# Deprecated
 func call_change_method(contract_id: String, method_name: String, args: Dictionary, \
 		gas: int = Near.DEFAULT_FUNCTION_CALL_GAS, deposit: float = 0) -> Dictionary:
 	if not is_signed_in():
@@ -501,7 +581,11 @@ func call_change_method(contract_id: String, method_name: String, args: Dictiona
 	var encoded_transaction
 	
 	if deposit > 0:
-		# TODO: handle calls with deposit in Intear wallet
+		if _near_connection.wallet_provider == WalletProviders.Wallet.INTEAR:
+			var error_message = "Deprecated method call_change_method was called with a deposit using Intear Wallet, which is not supported."
+			push_error(error_message)
+			return Near.create_error_response(error_message)
+		
 		# Function call access keys cannot send tokens. Redirect to wallet url
 		# with an unsigned encoded transaction.
 		encoded_transaction = CryptoProxy.create_transaction(

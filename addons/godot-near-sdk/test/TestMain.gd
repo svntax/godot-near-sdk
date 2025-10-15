@@ -1,6 +1,6 @@
 extends Control
 
-onready var label = $Label
+onready var result_label = $"%ResultLabel"
 onready var user_label = $UserLabel
 onready var message_input = $MessageInput
 onready var change_message_button = $ChangeMessageButton
@@ -28,6 +28,7 @@ func _ready():
 	wallet_connection.connect("user_signed_out", self, "_on_user_signed_out")
 	wallet_connection.connect("transaction_hash_received", self, "_on_tx_hash_received")
 	wallet_connection.connect("signed_message_response", self, "_on_signed_message_response")
+	wallet_connection.connect("sent_transactions_response", self, "_on_sent_transactions_response")
 	wallet_connection.connect("websocket_closed", self, "_on_wallet_websocket_closed")
 	intear_selector.connect("selector_closed", self, "_on_intear_selector_closed")
 	if wallet_connection.is_signed_in():
@@ -38,13 +39,17 @@ func _ready():
 	change_message_button.disabled = !wallet_connection.is_signed_in()
 	sign_message_button.disabled = !wallet_connection.is_signed_in()
 
+# Enable/disable the main buttons that need to await for a response
+func set_enabled_main_buttons(value: bool) -> void:
+	view_access_key_button.disabled = !value
+	change_message_button.disabled = !value
+	message_input.editable = value
+	sign_message_button.disabled = !value
+
 func _on_user_signed_in(wallet: WalletConnection):
 	user_label.text = "Signed in as: " + wallet.account_id
 	login_button.text = "Sign Out"
-	view_access_key_button.disabled = false
-	change_message_button.disabled = false
-	message_input.editable = true
-	sign_message_button.disabled = false
+	set_enabled_main_buttons(true)
 	login_button.disabled = false
 	intear_selector.close()
 	# Note: when using Intear Wallet, it's up to the developer to handle if functionCallKeyAdded was false
@@ -52,23 +57,25 @@ func _on_user_signed_in(wallet: WalletConnection):
 func _on_user_signed_out(_wallet: WalletConnection):
 	user_label.text = "Not signed in"
 	login_button.text = "Sign In"
-	view_access_key_button.disabled = true
-	change_message_button.disabled = true
-	sign_message_button.disabled = true
+	set_enabled_main_buttons(false)
 
 func _on_wallet_websocket_closed() -> void:
 	# Note: This doesn't run if the user closed the desktop wallet (did NOT click on Connect nor Cancel)
 	login_button.disabled = false
 	intear_selector.close()
+	set_enabled_main_buttons(true)
 
 func _on_intear_selector_closed() -> void:
 	login_button.disabled = false
 
 func _on_tx_hash_received(tx_hash: String) -> void:
-	label.set_text("Transaction hash: " + tx_hash)
+	result_label.set_text("Transaction hash: " + tx_hash)
 
 func _on_signed_message_response(response: Dictionary) -> void:
-	label.set_text(str(response))
+	result_label.set_text(JSON.print(response, "  "))
+
+func _on_sent_transactions_response(response: Dictionary) -> void:
+	result_label.set_text(JSON.print(response, "  "))
 
 func _on_Button_pressed():
 	var result = Near.call_view_method(CONTRACT_ID, "helloWorld")
@@ -76,16 +83,14 @@ func _on_Button_pressed():
 		result = yield(result, "completed")
 	if result.has("error"):
 		if result.error.has("message"):
-			label.set_text(result.error.message)
+			result_label.set_text(result.error.message)
 		else:
-			label.set_text(JSON.print(result.error))
+			result_label.set_text(JSON.print(result.error, "  "))
 	else:
-		label.set_text(result.data)
+		result_label.set_text(result.data)
 
 func _on_SignMessageButton_pressed():
-	view_access_key_button.disabled = true
-	change_message_button.disabled = true
-	sign_message_button.disabled = true
+	set_enabled_main_buttons(false)
 	
 	var message = "Hello, this is a test message."
 	var recipient = "Test app"
@@ -96,18 +101,16 @@ func _on_SignMessageButton_pressed():
 	
 	var success = false
 	if result.has("error"):
-		label.set_text(JSON.print(result.error))
+		result_label.set_text(JSON.print(result.error, "  "))
 	else:
 		success = true
-		label.set_text(JSON.print(result))
+		result_label.set_text(JSON.print(result, "  "))
 	
 	if success:
-		view_access_key_button.disabled = false
-		change_message_button.disabled = false
-		sign_message_button.disabled = false
+		set_enabled_main_buttons(true)
 
 func _on_ClearButton_pressed():
-	label.set_text("")
+	result_label.set_text("")
 
 func _on_LoginButton_pressed():
 	if wallet_connection == null:
@@ -117,7 +120,6 @@ func _on_LoginButton_pressed():
 	else:
 		login_button.disabled = true
 		# Test contract has helloWorld(), read(key: string), write(key: string, value: string)
-		#wallet_connection.sign_in(CONTRACT_ID, CONTRACT_METHODS)
 		intear_selector.open(wallet_connection, CONTRACT_ID, CONTRACT_METHODS)
 
 func _on_ReadMessageButton_pressed():
@@ -127,58 +129,57 @@ func _on_ReadMessageButton_pressed():
 		result = yield(result, "completed")
 	if result.has("error"):
 		if result.error.has("message"):
-			label.set_text(result.error.message)
+			result_label.set_text(result.error.message)
 		else:
-			label.set_text(JSON.print(result.error))
+			result_label.set_text(JSON.print(result.error, "  "))
 	else:
-		label.set_text(result.data)
+		result_label.set_text(result.data)
 
 func _on_ChangeMessageButton_pressed():
 	var input_text = message_input.text
-	message_input.editable = false
-	change_message_button.disabled = true
-	view_access_key_button.disabled = true
-	sign_message_button.disabled = true
+	set_enabled_main_buttons(false)
 	
 	var attached_deposit = donation_slider.value
-	
-	var result = wallet_connection.call_change_method(CONTRACT_ID, \
-		"write", {"key": "message", "value": input_text}, \
-		Near.DEFAULT_FUNCTION_CALL_GAS, attached_deposit)
+	var write_transaction = Near.createTransaction(wallet_connection.account_id, CONTRACT_ID, \
+		[
+			Near.functionCallAction(
+				"write",
+				{"key": "message", "value": input_text},
+				str(Near.DEFAULT_FUNCTION_CALL_GAS),
+				Near.from_near(str(attached_deposit))
+			)
+		]
+	)
+	var transactions = [write_transaction]
+	var result = wallet_connection.send_transactions(transactions)
 	
 	if result is GDScriptFunctionState:
 		result = yield(result, "completed")
 	
 	var success = false
 	if result.has("error"):
-		label.set_text(JSON.print(result.error))
+		result_label.set_text(JSON.print(result.error, "  "))
 	elif result.has("message"):
-		label.set_text(result.message)
-	elif result.has("warning"):
-		label.set_text(result.warning)
+		success = true
+		result_label.set_text(result.message)
 	else:
 		success = true
-		label.set_text(JSON.print(result.status) + JSON.print(result.transaction))
+		result_label.set_text(JSON.print(result.status) + JSON.print(result.transaction))
 	
 	if success:
-		message_input.editable = true
-		change_message_button.disabled = false
-		view_access_key_button.disabled = false
-		sign_message_button.disabled = false
+		set_enabled_main_buttons(true)
 
 func _on_BlockButton_pressed():
 	var result = Near.block_query_latest()
 	if result is GDScriptFunctionState:
 		result = yield(result, "completed")
 	if result.has("error"):
-		label.set_text("Failed to get latest block.")
+		result_label.set_text("Failed to get latest block.")
 	else:
-		label.set_text(result.header.hash)
+		result_label.set_text(result.header.hash)
 
 func _on_ViewAccessKeyButton_pressed():
-	view_access_key_button.disabled = true
-	change_message_button.disabled = true
-	sign_message_button.disabled = true
+	set_enabled_main_buttons(false)
 	
 	var account_id = wallet_connection.account_id
 	var public_key = wallet_connection.get_app_public_key()
@@ -187,15 +188,13 @@ func _on_ViewAccessKeyButton_pressed():
 		result = yield(result, "completed")
 	if result.has("error"):
 		if result.error.has("message"):
-			label.set_text(result.error.message)
+			result_label.set_text(result.error.message)
 		else:
-			label.set_text(JSON.print(result.error))
+			result_label.set_text(JSON.print(result.error, "  "))
 	else:
-		label.set_text(JSON.print(result))
+		result_label.set_text(JSON.print(result, "  "))
 	
-	view_access_key_button.disabled = false
-	change_message_button.disabled = false
-	sign_message_button.disabled = false
+	set_enabled_main_buttons(true)
 
 func _on_DonationSlider_value_changed(value):
-	donation_label.set_text("Donation\n(NEAR): " + str(value))
+	donation_label.set_text("Deposit\n(NEAR): " + str(value))

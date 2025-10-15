@@ -13,18 +13,6 @@ __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="Label" type="Label" parent="."]
-margin_left = 216.0
-margin_top = 80.0
-margin_right = 722.0
-margin_bottom = 552.0
-rect_min_size = Vector2( 488, 472 )
-text = "Result string"
-autowrap = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
 [node name="Button" type="Button" parent="."]
 margin_left = 40.0
 margin_top = 60.0
@@ -126,26 +114,47 @@ margin_top = 336.0
 margin_right = 192.0
 margin_bottom = 368.0
 rect_min_size = Vector2( 152, 32 )
-text = "Donation
+text = "Deposit
 (NEAR): 0"
 
 [node name="DesktopWalletOpenWait" type="Timer" parent="."]
 wait_time = 3.0
 one_shot = true
 
-[node name="IntearSelector" parent="." instance=ExtResource( 3 )]
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+margin_left = 216.0
+margin_top = 80.0
+margin_right = 832.0
+margin_bottom = 512.0
+scroll_horizontal_enabled = false
+
+[node name="ResultLabel" type="Label" parent="ScrollContainer"]
+unique_name_in_owner = true
+margin_right = 616.0
+margin_bottom = 432.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Result string"
+autowrap = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="IntearSelector" parent="CanvasLayer" instance=ExtResource( 3 )]
 unique_name_in_owner = true
 visible = false
 close_button_path = NodePath("Control/IntearSelectorClose")
 
-[node name="Control" type="Control" parent="IntearSelector"]
+[node name="Control" type="Control" parent="CanvasLayer/IntearSelector"]
 margin_left = 7.0
 margin_top = 7.0
 margin_right = 473.0
 margin_bottom = 468.0
 mouse_filter = 2
 
-[node name="IntearSelectorClose" type="Button" parent="IntearSelector/Control"]
+[node name="IntearSelectorClose" type="Button" parent="CanvasLayer/IntearSelector/Control"]
 margin_left = 443.0
 margin_top = 0.5
 margin_right = 467.0

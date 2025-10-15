@@ -70,6 +70,10 @@ func create_intear_sign_message_signature(nonce: int, message: String) -> String
 	var message_to_sign = "%s|%s" % [str(nonce), message]
 	return sign_message(message_to_sign)
 
+func create_intear_send_transactions_signature(nonce: int, transactions_json: String) -> String:
+	var message_to_sign = "%s|%s" % [str(nonce), transactions_json]
+	return sign_message(message_to_sign)
+
 func create_nep413_payload(message: String, recipient: String) -> Dictionary:
 	var crypto = Crypto.new()
 	var nep413_nonce = crypto.generate_random_bytes(32)
