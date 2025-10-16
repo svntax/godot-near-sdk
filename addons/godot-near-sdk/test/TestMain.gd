@@ -128,8 +128,7 @@ func _on_LoginButton_pressed():
 		intear_selector.open(wallet_connection, CONTRACT_ID, CONTRACT_METHODS)
 
 func _on_ReadMessageButton_pressed():
-	var result = Near.call_view_method(CONTRACT_ID, \
-		"read", {"key": "message"})
+	var result = Near.call_view_method(CONTRACT_ID, "read", {"key": "message"})
 	if result is GDScriptFunctionState:
 		result = yield(result, "completed")
 	if result.has("error"):
@@ -142,10 +141,14 @@ func _on_ReadMessageButton_pressed():
 
 func _on_ChangeMessageButton_pressed():
 	var input_text = message_input.text
+	if input_text.empty():
+		result_label.set_text("Message should not be empty.")
+		return
+	
 	set_enabled_main_buttons(false)
 	
 	var attached_deposit = donation_slider.value
-	var write_transaction = Near.createTransaction(wallet_connection.account_id, CONTRACT_ID, \
+	var write_transaction = Near.createTransaction(wallet_connection.account_id, CONTRACT_ID,
 		[
 			Near.functionCallAction(
 				"write",

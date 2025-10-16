@@ -229,17 +229,38 @@ func stakeAction(stake: String, public_key: String) -> Dictionary:
 		}
 	}
 
-func addKeyAction() -> Dictionary:
-	return {}
-	# TODO AddKeyAction with AddKeyPermission interface
-#	type: "AddKey";
-#	params: {
-#		publicKey: string;
-#		accessKey: {
-#		  nonce?: number;
-#		  permission: AddKeyPermission;
-#		};
-#	};
+# Helper function to build the AddKeyPermission structure
+func _build_add_key_permission(permission, receiver_id: String, allowance: String, method_names: Array):
+	if permission == "FullAccess":
+		return "FullAccess"
+	else:
+		var perm_dict = {
+			"receiverId": receiver_id,
+			"allowance": allowance,
+			"methodNames": method_names
+		}
+		return perm_dict
+
+func addKeyAction(
+	public_key: String,
+	permission,  # Can be either String "FullAccess" or Dictionary
+	nonce = null,  # Optional, can be null
+	receiver_id: String = "",  # Only needed if permission is not "FullAccess"
+	allowance: String = "",  # Optional, only for receiver_id case
+	method_names: Array = []  # Optional, only for receiver_id case
+) -> Dictionary:
+	var access_key = {
+		"nonce": nonce,
+		"permission": _build_add_key_permission(permission, receiver_id, allowance, method_names)
+	}
+
+	return {
+		"type": "AddKey",
+		"params": {
+			"publicKey": public_key,
+			"accessKey": access_key
+		}
+	}
 
 func deleteKeyAction(public_key: String) -> Dictionary:
 	return {

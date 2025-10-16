@@ -82,8 +82,8 @@ margin_left = 40.0
 margin_top = 296.0
 margin_right = 192.0
 margin_bottom = 320.0
-text = "Message here..."
 max_length = 16
+placeholder_text = "Message here..."
 
 [node name="BlockButton" type="Button" parent="."]
 margin_left = 40.0
