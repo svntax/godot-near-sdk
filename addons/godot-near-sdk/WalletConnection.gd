@@ -297,8 +297,10 @@ func _send_intear_request(request_type: String) -> void:
 			var POPUP_FEATURES = "opener,width=400,height=700"
 			JavaScript.eval("%s = window.open('%s', '_blank', '%s')" % [JS_GODOT_BRIDGE, request_url, POPUP_FEATURES])
 		else:
+			# TODO: Support web wallet connection in desktop apps
 			# Open wallet with OS.shell_open()
-			OS.shell_open(request_url)
+			#OS.shell_open(request_url)
+			push_error("Intear web wallet connections are currently not supported in desktop apps.")
 
 func _send_intear_ws_sign_in_request() -> void:
 	var sign_in_request: Dictionary = _generate_intear_sign_in_request({

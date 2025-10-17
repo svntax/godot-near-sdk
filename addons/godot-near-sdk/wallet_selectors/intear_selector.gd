@@ -63,14 +63,14 @@ func _on_web_selected() -> void:
 		wallet_connection.set_intear_wallet_type(WalletType.WEB)
 		wallet_connection.sign_in(contract_id, contract_methods.duplicate())
 	else:
-		push_warning("Intear Web Wallet is currently not supported in desktop apps.")
+		push_error("Intear Web Wallet is currently not supported in desktop apps.")
 
 func _on_web_beta_selected() -> void:
 	if OS.has_feature("JavaScript"):
 		wallet_connection.set_intear_wallet_type(WalletType.WEB_BETA)
 		wallet_connection.sign_in(contract_id, contract_methods.duplicate())
 	else:
-		push_warning("Intear Web Wallet (Beta) is currently not supported in desktop apps.")
+		push_error("Intear Web Wallet (Beta) is currently not supported in desktop apps.")
 
 func _on_desktop_selected() -> void:
 	wallet_types_container.hide()
@@ -80,4 +80,4 @@ func _on_desktop_selected() -> void:
 
 func _on_selfhosted_selected() -> void:
 	wallet_connection.set_intear_wallet_type(WalletType.SELF_HOSTED)
-	push_warning("Self-hosted Intear Wallet is currently not supported.")
+	push_warning("Self-hosted Intear Wallet is currently not implemented.")
