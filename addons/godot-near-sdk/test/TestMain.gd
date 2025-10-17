@@ -74,9 +74,11 @@ func _on_tx_hash_received(tx_hash: String) -> void:
 
 func _on_signed_message_response(response: Dictionary) -> void:
 	result_label.set_text(JSON.print(response, "  "))
+	set_enabled_main_buttons(true)
 
 func _on_sent_transactions_response(response: Dictionary) -> void:
 	result_label.set_text(JSON.print(response, "  "))
+	set_enabled_main_buttons(true)
 
 func _on_error_response(response: Dictionary) -> void:
 	result_label.set_text(JSON.print(response, "  "))
