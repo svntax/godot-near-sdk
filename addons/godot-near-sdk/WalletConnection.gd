@@ -29,9 +29,6 @@ var app_contract_id: String
 var app_contract_method_names: Array
 const JS_GODOT_BRIDGE = "window.godotBridge"
 
-# Unused
-var _js_message_callback_ref = JavaScript.create_callback(self, "_on_js_message_event")
-
 func _init(near_connection: NearConnection):
 	_near_connection = near_connection
 	_check_signed_in()
@@ -286,6 +283,10 @@ func _send_intear_request(request_type: String) -> void:
 			iframe.style.display = "none"
 			iframe.src = request_url
 			js_document.body.appendChild(iframe)
+			
+			if _intear_wallet_iframe != null:
+				_intear_wallet_iframe.remove()
+			
 			_intear_wallet_iframe = iframe
 		else:
 			OS.shell_open(request_url)
@@ -338,118 +339,6 @@ func _send_intear_ws_send_transactions_request() -> void:
 func _handle_intear_send_transactions_response(response: Dictionary) -> void:
 	_intear_request_type = ""
 	emit_signal("sent_transactions_response", response)
-
-# Unused
-func _on_js_message_event(args):
-	#print("Message listener received data:")
-	var js_event = args[0]
-	var js_json = JavaScript.get_interface("JSON")
-	var json_string = js_json.stringify(js_event.data)
-	var parsed_data = JSON.parse(json_string)
-	if parsed_data.error == OK:
-		var response = parsed_data.result
-		match response.type:
-			"ready":
-				# Handshake complete, send request using postMessage()
-				if _intear_request_type == "connect":
-					_intear_web_post_message_sign_in()
-				elif _intear_request_type == "sign-message":
-					_intear_web_post_message_sign_message()
-				elif _intear_request_type == "send-transactions":
-					_intear_web_post_send_transactions()
-				else:
-					push_error("Invalid request type: " + _intear_request_type)
-			"connected":
-				print("Connected successfully! Closing wallet popup and removing event listener...")
-				JavaScript.eval("%s.close()" % [JS_GODOT_BRIDGE])
-				var js_window := JavaScript.get_interface("window")
-				js_window.removeEventListener("message", _js_message_callback_ref)
-				_handle_intear_sign_in_response(response)
-			"signed":
-				print("Signed message! Closing wallet popup and removing event listeners...")
-				JavaScript.eval("%s.close()" % [JS_GODOT_BRIDGE])
-				var js_window := JavaScript.get_interface("window")
-				js_window.removeEventListener("message", _js_message_callback_ref)
-				_handle_intear_sign_message_response(response)
-			"sent":
-				print("Transactions sent! Closing wallet popup and removing event listeners...")
-				JavaScript.eval("%s.close()" % [JS_GODOT_BRIDGE])
-				var js_window := JavaScript.get_interface("window")
-				js_window.removeEventListener("message", _js_message_callback_ref)
-				_handle_intear_send_transactions_response(response)
-			"error":
-				emit_signal("error_response", response)
-				if response.has("message"):
-					print(response.get("message"))
-				else:
-					push_error("Unknown error from wallet popup")
-				JavaScript.eval("%s.close()" % [JS_GODOT_BRIDGE])
-				var js_window := JavaScript.get_interface("window")
-				js_window.removeEventListener("message", _js_message_callback_ref)
-	else:
-		push_error("Error parsing response data as JSON")
-
-# Unused
-func _intear_web_post_message_sign_in() -> void:
-	print("Wallet popup ready. Sending signIn request.")
-	var sign_in_request: Dictionary = _generate_intear_sign_in_request({
-		"contractId": app_contract_id,
-		"methodNames": app_contract_method_names
-	})
-	var sign_in_request_json = JSON.print(sign_in_request)
-	var data = sign_in_request.get("data")
-	var method_names: Array = data.get("methodNames")
-	var sign_in_request_js = """{
-		"type": "signIn",
-		"data": {
-			"publicKey": "%s",
-			"contractId": "%s",
-			"methodNames": %s,
-			"networkId": "%s",
-			"nonce": %s,
-			"message": '%s',
-			"signature": "%s",
-			"version": "%s",
-			"actualOrigin": "%s"
-		}
-	}""" % [
-		data.get("publicKey"),
-		data.get("contractId"),
-		JSON.print(method_names),
-		data.get("networkId"),
-		data.get("nonce"),
-		data.get("message"),
-		data.get("signature"),
-		data.get("version"),
-		data.get("actualOrigin")
-	]
-	var target_origin = _near_connection.wallet_url
-	var eval_string = "%s.postMessage(%s, '%s')" % [JS_GODOT_BRIDGE, sign_in_request_js, target_origin]
-	JavaScript.eval(eval_string)
-
-# Unused
-func _intear_web_post_message_sign_message() -> void:
-	print("Wallet popup ready. Sending signMessage request.")
-	var data = _intear_sign_message_request.get("data")
-	var sign_message_request_js = """{
-		"type": "signMessage",
-		"data": {
-			"message": '%s',
-			"accountId": "%s",
-			"publicKey": "%s",
-			"nonce": %s,
-			"signature": "%s"
-		}
-	}""" % [
-		data.get("message"),
-		data.get("accountId"),
-		data.get("publicKey"),
-		data.get("nonce"),
-		data.get("signature")
-	]
-	var target_origin = _near_connection.wallet_url
-	var eval_string = "%s.postMessage(%s, '%s')" % [JS_GODOT_BRIDGE, sign_message_request_js, target_origin]
-	JavaScript.eval(eval_string)
 
 func _intear_web_post_send_transactions() -> void:
 	print("Wallet popup ready. Sending transactions request.")
