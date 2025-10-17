@@ -1,42 +1,200 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://addons/godot-near-sdk/test/TestMain.gd" type="Script" id=1]
 [ext_resource path="res://addons/godot-near-sdk/utils/CryptoHelper.cs" type="Script" id=2]
+[ext_resource path="res://addons/godot-near-sdk/wallet_selectors/intear_selector.tscn" type="PackedScene" id=3]
+
+[sub_resource type="StyleBoxEmpty" id=1]
 
 [node name="TestMain" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 script = ExtResource( 1 )
 __meta__ = {
-"_edit_use_anchors_": false
+"_edit_lock_": true
 }
 
-[node name="Label" type="Label" parent="."]
-margin_left = 216.0
-margin_top = 80.0
-margin_right = 704.0
-margin_bottom = 552.0
-rect_min_size = Vector2( 488, 472 )
-text = "Result string"
-autowrap = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="PanelContainer" type="PanelContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_styles/panel = SubResource( 1 )
 
-[node name="Button" type="Button" parent="."]
-margin_left = 40.0
-margin_top = 60.0
-margin_right = 192.0
-margin_bottom = 112.0
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+custom_constants/margin_right = 16
+custom_constants/margin_top = 16
+custom_constants/margin_left = 16
+custom_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+margin_left = 16.0
+margin_top = 16.0
+margin_right = 1008.0
+margin_bottom = 584.0
+custom_constants/separation = 32
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+margin_right = 992.0
+margin_bottom = 24.0
+custom_constants/separation = 12
+alignment = 2
+
+[node name="Header" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+margin_top = 5.0
+margin_right = 803.0
+margin_bottom = 19.0
+size_flags_horizontal = 3
+text = "Test Screen"
+
+[node name="UserLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+margin_left = 815.0
+margin_top = 5.0
+margin_right = 900.0
+margin_bottom = 19.0
+text = "Not signed in"
+
+[node name="LoginButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+margin_left = 912.0
+margin_right = 992.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 80, 24 )
+text = "Sign In"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+margin_top = 56.0
+margin_right = 992.0
+margin_bottom = 568.0
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer"]
+margin_right = 992.0
+margin_bottom = 512.0
+size_flags_vertical = 3
+custom_constants/separation = 16
+
+[node name="Controls" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer"]
+margin_right = 166.0
+margin_bottom = 512.0
+custom_constants/separation = 12
+
+[node name="Button" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls"]
+margin_right = 166.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 152, 40 )
 text = "View call"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="ClearButton" type="Button" parent="."]
-margin_left = 232.0
-margin_top = 40.0
-margin_right = 276.0
-margin_bottom = 60.0
+[node name="SignMessageButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls"]
+unique_name_in_owner = true
+margin_top = 52.0
+margin_right = 166.0
+margin_bottom = 92.0
+rect_min_size = Vector2( 152, 40 )
+text = "Sign message"
+
+[node name="ReadMessageButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls"]
+margin_top = 104.0
+margin_right = 166.0
+margin_bottom = 144.0
+rect_min_size = Vector2( 152, 40 )
+text = "View App Message"
+
+[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls"]
+margin_top = 156.0
+margin_right = 166.0
+margin_bottom = 290.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/PanelContainer"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 159.0
+margin_bottom = 127.0
+
+[node name="ChangeMessageButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+margin_right = 152.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 152, 40 )
+text = "Change App Message"
+
+[node name="MessageInput" type="LineEdit" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+margin_top = 44.0
+margin_right = 152.0
+margin_bottom = 68.0
+max_length = 16
+placeholder_text = "Message here..."
+
+[node name="Gap" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/PanelContainer/VBoxContainer"]
+margin_top = 72.0
+margin_right = 152.0
+margin_bottom = 80.0
+rect_min_size = Vector2( 0, 8 )
+
+[node name="DonationLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+margin_top = 84.0
+margin_right = 152.0
+margin_bottom = 100.0
+rect_min_size = Vector2( 152, 16 )
+text = "Deposit (NEAR): 0"
+
+[node name="DonationSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+margin_top = 104.0
+margin_right = 152.0
+margin_bottom = 120.0
+rect_min_size = Vector2( 152, 16 )
+max_value = 1.0
+step = 0.01
+
+[node name="BlockButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls"]
+margin_top = 302.0
+margin_right = 166.0
+margin_bottom = 342.0
+rect_min_size = Vector2( 152, 40 )
+text = "Get latest block"
+
+[node name="ViewAccessKeyButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls"]
+unique_name_in_owner = true
+margin_top = 354.0
+margin_right = 166.0
+margin_bottom = 394.0
+rect_min_size = Vector2( 152, 40 )
+text = "View access key"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer"]
+margin_left = 182.0
+margin_right = 992.0
+margin_bottom = 512.0
+size_flags_horizontal = 3
+scroll_horizontal_enabled = false
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/ScrollContainer"]
+margin_right = 810.0
+margin_bottom = 54.0
+size_flags_horizontal = 3
+custom_constants/separation = 16
+
+[node name="ClearButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/ScrollContainer/VBoxContainer"]
+margin_right = 60.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 60, 24 )
+size_flags_horizontal = 0
 text = "Clear"
+
+[node name="ResultLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/ScrollContainer/VBoxContainer"]
+unique_name_in_owner = true
+margin_top = 40.0
+margin_right = 810.0
+margin_bottom = 54.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Response here"
+autowrap = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -44,125 +202,39 @@ __meta__ = {
 [node name="CryptoHelperTest" type="Node" parent="."]
 script = ExtResource( 2 )
 
-[node name="InvalidMethodButton" type="Button" parent="."]
-margin_left = 40.0
-margin_top = 128.0
-margin_right = 192.0
-margin_bottom = 176.0
-text = "Invalid method call"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="DesktopWalletOpenWait" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
 
-[node name="InvalidAccountButton" type="Button" parent="."]
-margin_left = 40.0
-margin_top = 192.0
-margin_right = 192.0
-margin_bottom = 240.0
-text = "Invalid account call"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="LoginButton" type="Button" parent="."]
-margin_left = 408.0
-margin_top = 24.0
-margin_right = 496.0
-margin_bottom = 56.0
-text = "Sign In"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="IntearSelector" parent="CanvasLayer" instance=ExtResource( 3 )]
+unique_name_in_owner = true
+visible = false
+close_button_path = NodePath("Control/IntearSelectorClose")
 
-[node name="UserLabel" type="Label" parent="."]
-margin_left = 520.0
-margin_top = 24.0
-margin_right = 768.0
-margin_bottom = 60.0
-text = "Not signed in"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="Control" type="Control" parent="CanvasLayer/IntearSelector"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 473.0
+margin_bottom = 468.0
+mouse_filter = 2
 
-[node name="ReadMessageButton" type="Button" parent="."]
-margin_left = 40.0
-margin_top = 256.0
-margin_right = 192.0
-margin_bottom = 304.0
-text = "View Message"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="IntearSelectorClose" type="Button" parent="CanvasLayer/IntearSelector/Control"]
+margin_left = 443.0
+margin_top = 0.5
+margin_right = 467.0
+margin_bottom = 24.5
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "X"
 
-[node name="ChangeMessageButton" type="Button" parent="."]
-margin_left = 40.0
-margin_top = 320.0
-margin_right = 192.0
-margin_bottom = 352.0
-text = "Change Message"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="MessageInput" type="LineEdit" parent="."]
-margin_left = 40.0
-margin_top = 360.0
-margin_right = 192.0
-margin_bottom = 384.0
-text = "Message here..."
-max_length = 16
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="BlockButton" type="Button" parent="."]
-margin_left = 40.0
-margin_top = 480.0
-margin_right = 192.0
-margin_bottom = 520.0
-text = "Get latest block"
-
-[node name="ViewAccessKeyButton" type="Button" parent="."]
-margin_left = 40.0
-margin_top = 536.0
-margin_right = 192.0
-margin_bottom = 576.0
-text = "View access key"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="DonationSlider" type="HSlider" parent="."]
-margin_left = 40.0
-margin_top = 432.0
-margin_right = 192.0
-margin_bottom = 448.0
-rect_min_size = Vector2( 152, 16 )
-max_value = 1.0
-step = 0.01
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="DonationLabel" type="Label" parent="."]
-margin_left = 40.0
-margin_top = 400.0
-margin_right = 192.0
-margin_bottom = 432.0
-rect_min_size = Vector2( 152, 32 )
-text = "Donation
-(NEAR): 0"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
-[connection signal="pressed" from="ClearButton" to="." method="_on_ClearButton_pressed"]
-[connection signal="pressed" from="InvalidMethodButton" to="." method="_on_InvalidMethodButton_pressed"]
-[connection signal="pressed" from="InvalidAccountButton" to="." method="_on_InvalidAccountButton_pressed"]
-[connection signal="pressed" from="LoginButton" to="." method="_on_LoginButton_pressed"]
-[connection signal="pressed" from="ReadMessageButton" to="." method="_on_ReadMessageButton_pressed"]
-[connection signal="pressed" from="ChangeMessageButton" to="." method="_on_ChangeMessageButton_pressed"]
-[connection signal="pressed" from="BlockButton" to="." method="_on_BlockButton_pressed"]
-[connection signal="pressed" from="ViewAccessKeyButton" to="." method="_on_ViewAccessKeyButton_pressed"]
-[connection signal="value_changed" from="DonationSlider" to="." method="_on_DonationSlider_value_changed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/LoginButton" to="." method="_on_LoginButton_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/Button" to="." method="_on_Button_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/SignMessageButton" to="." method="_on_SignMessageButton_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/ReadMessageButton" to="." method="_on_ReadMessageButton_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/PanelContainer/VBoxContainer/ChangeMessageButton" to="." method="_on_ChangeMessageButton_pressed"]
+[connection signal="value_changed" from="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/PanelContainer/VBoxContainer/DonationSlider" to="." method="_on_DonationSlider_value_changed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/BlockButton" to="." method="_on_BlockButton_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/Controls/ViewAccessKeyButton" to="." method="_on_ViewAccessKeyButton_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer/ScrollContainer/VBoxContainer/ClearButton" to="." method="_on_ClearButton_pressed"]

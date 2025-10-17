@@ -1,0 +1,142 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/godot-near-sdk/wallet_selectors/intear_selector.gd" type="Script" id=1]
+
+[node name="IntearSelector" type="PanelContainer"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -240.0
+margin_top = -237.5
+margin_right = 240.0
+margin_bottom = 237.5
+rect_min_size = Vector2( 480, 475 )
+script = ExtResource( 1 )
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 473.0
+margin_bottom = 468.0
+custom_constants/margin_right = 8
+custom_constants/margin_top = 16
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+margin_left = 8.0
+margin_top = 16.0
+margin_right = 458.0
+margin_bottom = 445.0
+
+[node name="Header" type="Label" parent="MarginContainer/VBoxContainer"]
+margin_right = 450.0
+margin_bottom = 14.0
+text = "CONNECT INTEAR WALLET"
+align = 1
+
+[node name="Gap" type="Control" parent="MarginContainer/VBoxContainer"]
+margin_top = 18.0
+margin_right = 450.0
+margin_bottom = 34.0
+rect_min_size = Vector2( 0, 16 )
+
+[node name="Subheader" type="Label" parent="MarginContainer/VBoxContainer"]
+margin_top = 38.0
+margin_right = 450.0
+margin_bottom = 52.0
+text = "Choose your preferred wallet connection method"
+align = 1
+
+[node name="Gap2" type="Control" parent="MarginContainer/VBoxContainer"]
+margin_top = 56.0
+margin_right = 450.0
+margin_bottom = 72.0
+rect_min_size = Vector2( 0, 16 )
+
+[node name="WalletTypesContainer" type="GridContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+margin_top = 76.0
+margin_right = 450.0
+margin_bottom = 429.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 2
+
+[node name="Web" type="Button" parent="MarginContainer/VBoxContainer/WalletTypesContainer"]
+unique_name_in_owner = true
+margin_right = 223.0
+margin_bottom = 175.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Web"
+
+[node name="WebBeta" type="Button" parent="MarginContainer/VBoxContainer/WalletTypesContainer"]
+unique_name_in_owner = true
+margin_left = 227.0
+margin_right = 450.0
+margin_bottom = 175.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Web (Beta)"
+
+[node name="Desktop" type="Button" parent="MarginContainer/VBoxContainer/WalletTypesContainer"]
+unique_name_in_owner = true
+margin_top = 179.0
+margin_right = 223.0
+margin_bottom = 353.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Desktop"
+
+[node name="SelfHosted" type="Button" parent="MarginContainer/VBoxContainer/WalletTypesContainer"]
+unique_name_in_owner = true
+visible = false
+margin_left = 358.0
+margin_top = 333.0
+margin_right = 450.0
+margin_bottom = 353.0
+size_flags_horizontal = 8
+size_flags_vertical = 8
+text = "Self hosting?"
+flat = true
+
+[node name="DesktopSelectedContent" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+margin_top = 76.0
+margin_right = 450.0
+margin_bottom = 429.0
+size_flags_vertical = 3
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/DesktopSelectedContent"]
+margin_top = 127.0
+margin_right = 450.0
+margin_bottom = 141.0
+text = "Connecting to Desktop Wallet..."
+align = 1
+
+[node name="Label2" type="Label" parent="MarginContainer/VBoxContainer/DesktopSelectedContent"]
+margin_top = 145.0
+margin_right = 450.0
+margin_bottom = 159.0
+text = "Please complete the connection in your desktop app."
+align = 1
+
+[node name="Gap" type="Control" parent="MarginContainer/VBoxContainer/DesktopSelectedContent"]
+margin_top = 163.0
+margin_right = 450.0
+margin_bottom = 179.0
+rect_min_size = Vector2( 0, 16 )
+
+[node name="Retry" type="Button" parent="MarginContainer/VBoxContainer/DesktopSelectedContent"]
+unique_name_in_owner = true
+margin_left = 180.0
+margin_top = 183.0
+margin_right = 270.0
+margin_bottom = 225.0
+rect_min_size = Vector2( 90, 42 )
+size_flags_horizontal = 4
+text = "Retry"

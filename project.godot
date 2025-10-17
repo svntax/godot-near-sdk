@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Control",
+"class": "IntearSelector",
+"language": "GDScript",
+"path": "res://addons/godot-near-sdk/wallet_selectors/intear_selector.gd"
+}, {
 "base": "Reference",
 "class": "NearConnection",
 "language": "GDScript",
@@ -18,10 +23,17 @@ _global_script_classes=[ {
 "class": "WalletConnection",
 "language": "GDScript",
 "path": "res://addons/godot-near-sdk/WalletConnection.gd"
+}, {
+"base": "Node",
+"class": "WalletProviders",
+"language": "GDScript",
+"path": "res://addons/godot-near-sdk/WalletProviders.gd"
 } ]
 _global_script_class_icons={
+"IntearSelector": "",
 "NearConnection": "",
-"WalletConnection": ""
+"WalletConnection": "",
+"WalletProviders": ""
 }
 
 [application]
@@ -34,6 +46,10 @@ config/icon="res://icon.png"
 
 Near="*res://addons/godot-near-sdk/Near.tscn"
 CryptoProxy="*res://addons/godot-near-sdk/utils/CryptoProxy.gd"
+
+[mono]
+
+project/assembly_name="GodotNEARSDK"
 
 [physics]
 

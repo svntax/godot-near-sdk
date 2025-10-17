@@ -60,19 +60,66 @@ func create_signed_transaction(account_id: String, receiver_id: String, \
 	
 	return signed_transaction
 
-func save_account_id(account_id: String) -> void:
+# Return a signature used for Intear's signIn request payload
+func create_intear_connect_signature(nonce: int, message: String) -> String:
+	var message_to_sign = "%s|%s" % [str(nonce), message]
+	return sign_message(message_to_sign)
+
+# Return a signature used for Intear's signMessage request payload
+func create_intear_sign_message_signature(nonce: int, message: String) -> String:
+	var message_to_sign = "%s|%s" % [str(nonce), message]
+	return sign_message(message_to_sign)
+
+func create_intear_send_transactions_signature(nonce: int, transactions_json: String) -> String:
+	var message_to_sign = "%s|%s" % [str(nonce), transactions_json]
+	return sign_message(message_to_sign)
+
+func create_nep413_payload(message: String, recipient: String) -> Dictionary:
+	var crypto = Crypto.new()
+	var nep413_nonce = crypto.generate_random_bytes(32)
+	var nonce_as_array: Array = nep413_nonce # Necessary to prevent Godot's JSON serializer from adding quotes around the array
+	var payload = {
+		"message": message,
+		"nonce": nonce_as_array,
+		"recipient": recipient,
+		"callback_url": null,
+		"state": null
+	}
+	return payload
+
+# Sign the given message with this app's private key
+func sign_message(message: String) -> String:
+	var crypto_helper = crypto_helper_script.new()
+	var config = Near.near_connection.user_config
+	var private_key = ""
+	if config.has_section_key("user", "app_private_key"):
+		private_key = config.get_value("user", "app_private_key")
+	elif config.has_section_key("temp", "private_key"):
+		private_key = config.get_value("temp", "private_key")
+	var signed_message: String = crypto_helper.CreateSignedMessage(
+		private_key, message.to_utf8()
+	)
+	return "ed25519:%s" % signed_message
+
+func save_account_data(account_id: String, account_public_key: String) -> void:
 	# Move the keys from temporary to stored state and add the account id
 	var config = Near.near_connection.user_config
 	var public_key = config.get_value("temp", "public_key", "")
 	var private_key = config.get_value("temp", "private_key", "")
 	if !public_key.empty() and !private_key.empty():
-		config.set_value("user", "public_key", public_key)
-		config.set_value("user", "private_key", private_key)
+		config.set_value("user", "app_public_key", public_key)
+		config.set_value("user", "app_private_key", private_key)
 		config.set_value("user", "account_id", account_id)
+		config.set_value("user", "user_public_key", account_public_key)
 		config.erase_section("temp")
 		Near.near_connection.save_user_data()
 	else:
 		push_error("Error retrieving temporary key pair.")
+
+func save_intear_wallet_type(wallet_type: int) -> void:
+	var config = Near.near_connection.user_config
+	config.set_value("user", "intear_wallet_type", wallet_type)
+	Near.near_connection.save_user_data()
 
 func receive_transaction_hash(tx_hash: String) -> void:
 	emit_signal("transaction_hash_response", tx_hash)
@@ -112,7 +159,7 @@ func _start_local_http_server() -> void:
 		if not success:
 			push_error("Failed to find available port.")
 	elif err != OK:
-		push_error("Error code " + err + ": Error while creating local server.")
+		push_error("Error code " + str(err) + ": Error while creating local server.")
 
 func stop_server() -> void:
 	if _server:
