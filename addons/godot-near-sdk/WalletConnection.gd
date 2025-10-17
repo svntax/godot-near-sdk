@@ -4,6 +4,7 @@ class_name WalletConnection
 signal user_signed_in()
 signal user_signed_out()
 signal transaction_hash_received(tx_hash)
+signal connected_response(response)
 signal signed_message_response(response)
 signal sent_transactions_response(response)
 signal error_response(response)
@@ -319,6 +320,7 @@ func _handle_intear_sign_in_response(response: Dictionary) -> void:
 	CryptoProxy.save_account_data(account.accountId, account.publicKey)
 	CryptoProxy.save_intear_wallet_type(intear_wallet_type)
 	function_call_key_added = response.functionCallKeyAdded
+	emit_signal("connected_response", response)
 
 func _send_intear_ws_sign_message_request() -> void:
 	var sign_message_request_json = JSON.print(_intear_sign_message_request)

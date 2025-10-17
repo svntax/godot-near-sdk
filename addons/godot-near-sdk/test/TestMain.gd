@@ -27,6 +27,7 @@ func _ready():
 	wallet_connection.connect("user_signed_in", self, "_on_user_signed_in")
 	wallet_connection.connect("user_signed_out", self, "_on_user_signed_out")
 	wallet_connection.connect("transaction_hash_received", self, "_on_tx_hash_received")
+	wallet_connection.connect("connected_response", self, "_on_connected_response")
 	wallet_connection.connect("signed_message_response", self, "_on_signed_message_response")
 	wallet_connection.connect("sent_transactions_response", self, "_on_sent_transactions_response")
 	wallet_connection.connect("error_response", self, "_on_error_response")
@@ -71,6 +72,10 @@ func _on_intear_selector_closed() -> void:
 
 func _on_tx_hash_received(tx_hash: String) -> void:
 	result_label.set_text("Transaction hash: " + tx_hash)
+
+func _on_connected_response(response: Dictionary) -> void:
+	result_label.set_text(JSON.print(response, "  "))
+	set_enabled_main_buttons(true)
 
 func _on_signed_message_response(response: Dictionary) -> void:
 	result_label.set_text(JSON.print(response, "  "))
