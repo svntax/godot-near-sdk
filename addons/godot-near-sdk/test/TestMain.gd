@@ -1,14 +1,14 @@
 extends Control
 
 onready var result_label = $"%ResultLabel"
-onready var user_label = $UserLabel
-onready var message_input = $MessageInput
-onready var change_message_button = $ChangeMessageButton
-onready var login_button = $LoginButton
-onready var view_access_key_button = $ViewAccessKeyButton
-onready var sign_message_button = $SignMessageButton
-onready var donation_label = $DonationLabel
-onready var donation_slider = $DonationSlider
+onready var user_label = $"%UserLabel"
+onready var message_input = $"%MessageInput"
+onready var change_message_button = $"%ChangeMessageButton"
+onready var login_button = $"%LoginButton"
+onready var view_access_key_button = $"%ViewAccessKeyButton"
+onready var sign_message_button = $"%SignMessageButton"
+onready var donation_label = $"%DonationLabel"
+onready var donation_slider = $"%DonationSlider"
 onready var intear_selector = $"%IntearSelector"
 
 var config = {
