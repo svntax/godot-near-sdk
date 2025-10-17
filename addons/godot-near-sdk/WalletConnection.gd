@@ -340,29 +340,6 @@ func _handle_intear_send_transactions_response(response: Dictionary) -> void:
 	_intear_request_type = ""
 	emit_signal("sent_transactions_response", response)
 
-func _intear_web_post_send_transactions() -> void:
-	print("Wallet popup ready. Sending transactions request.")
-	var data = _intear_send_transactions_request.get("data")
-	var send_transactions_request_js = """{
-		"type": "signAndSendTransactions",
-		"data": {
-			"accountId": "%s",
-			"publicKey": "%s",
-			"nonce": %s,
-			"signature": "%s",
-			"transactions": '%s'
-		}
-	}""" % [
-		data.get("accountId"),
-		data.get("publicKey"),
-		data.get("nonce"),
-		data.get("signature"),
-		data.get("transactions")
-	]
-	var target_origin = _near_connection.wallet_url
-	var eval_string = "%s.postMessage(%s, '%s')" % [JS_GODOT_BRIDGE, send_transactions_request_js, target_origin]
-	JavaScript.eval(eval_string)
-
 func sign_out() -> void:
 	account_id = ""
 	app_contract_id = ""
