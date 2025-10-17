@@ -92,6 +92,7 @@ text = "Desktop"
 
 [node name="SelfHosted" type="Button" parent="MarginContainer/VBoxContainer/WalletTypesContainer"]
 unique_name_in_owner = true
+visible = false
 margin_left = 358.0
 margin_top = 333.0
 margin_right = 450.0
