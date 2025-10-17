@@ -18,6 +18,7 @@ const INTEAR_REQUEST_TYPES = ["connect", "sign-message", "send-transactions"]
 var intear_wallet_type: int
 var _intear_ws_session_id: String = ""
 var _intear_request_type: String
+var _intear_wallet_iframe = null
 var _intear_sign_message_request: Dictionary = {}
 var _intear_send_transactions_request: Dictionary = {}
 var function_call_key_added: bool = false setget ,is_function_call_key_added
@@ -154,6 +155,9 @@ func _websocket_closed(was_clean = false):
 	print("Closed, clean: ", was_clean)
 	Near.set_process(false)
 	_intear_ws_session_id = ""
+	if OS.has_feature("JavaScript") and _intear_wallet_iframe != null:
+		_intear_wallet_iframe.remove()
+		_intear_wallet_iframe = null
 	emit_signal("websocket_closed")
 
 func _websocket_connected(proto = ""):
@@ -258,50 +262,43 @@ func _generate_intear_send_transactions_request(params: Dictionary) -> Dictionar
 	}
 	return send_transactions_request
 
+# Send a request to Intear Wallet's websockets bridge
 func _send_intear_request(request_type: String) -> void:
 	if !(request_type in INTEAR_REQUEST_TYPES):
 		push_error("Invalid request type: " + request_type)
 		return
 	
-	if OS.has_feature("JavaScript"):
-		if intear_wallet_type in [IntearSelector.WalletType.WEB, IntearSelector.WalletType.WEB_BETA]:
-			if request_type == "connect":
-				_send_intear_ws_sign_in_request()
-			elif request_type == "sign-message":
-				_send_intear_ws_sign_message_request()
-			elif request_type == "send-transactions":
-				_send_intear_ws_send_transactions_request()
-			# Open popup
+	# Send the request first
+	if request_type == "connect":
+		_send_intear_ws_sign_in_request()
+	elif request_type == "sign-message":
+		_send_intear_ws_sign_message_request()
+	elif request_type == "send-transactions":
+		_send_intear_ws_send_transactions_request()
+	
+	# Open the wallet as a popup
+	if intear_wallet_type == IntearSelector.WalletType.DESKTOP:
+		var request_url = "intear://%s?session_id=%s" % [request_type, _intear_ws_session_id]
+		if OS.has_feature("JavaScript"):
+			# Open the desktop wallet from an iframe to avoid opening a new tab
+			var js_document := JavaScript.get_interface("document")
+			var iframe = js_document.createElement("iframe")
+			iframe.style.display = "none"
+			iframe.src = request_url
+			js_document.body.appendChild(iframe)
+			_intear_wallet_iframe = iframe
+		else:
+			OS.shell_open(request_url)
+	else:
+		var request_url = "%s/%s?session_id=%s" % [_near_connection.wallet_url, request_type, _intear_ws_session_id]
+		if OS.has_feature("JavaScript"):
+			# Open wallet with window.open()
 			var js_window := JavaScript.get_interface("window")
 			var POPUP_FEATURES = "opener,width=400,height=700"
-			var request_url = "%s/%s?session_id=%s" % [_near_connection.wallet_url, request_type, _intear_ws_session_id]
 			JavaScript.eval("%s = window.open('%s', '_blank', '%s')" % [JS_GODOT_BRIDGE, request_url, POPUP_FEATURES])
-		elif intear_wallet_type == IntearSelector.WalletType.DESKTOP:
-			if _intear_ws_session_id.empty():
-				# Selected desktop wallet from web app, so we need to start a new websockets connection
-				_start_intear_websocket_connection()
-			else:
-				if request_type == "connect":
-					_send_intear_ws_sign_in_request()
-				elif request_type == "sign-message":
-					_send_intear_ws_sign_message_request()
-				elif request_type == "send-transactions":
-					_send_intear_ws_send_transactions_request()
-				# Open popup
-				OS.shell_open("intear://%s?session_id=%s" % [request_type, _intear_ws_session_id])
-	else:
-		if intear_wallet_type == IntearSelector.WalletType.DESKTOP:
-			if request_type == "connect":
-				_send_intear_ws_sign_in_request()
-			elif request_type == "sign-message":
-				_send_intear_ws_sign_message_request()
-			elif request_type == "send-transactions":
-				_send_intear_ws_send_transactions_request()
-			# Open popup
-			OS.shell_open("intear://%s?session_id=%s" % [request_type, _intear_ws_session_id])
 		else:
-			# TODO: Support web wallet from desktop apps
-			push_error("Only the Intear Desktop Wallet is supported in desktop apps at this time.")
+			# Open wallet with OS.shell_open()
+			OS.shell_open(request_url)
 
 func _send_intear_ws_sign_in_request() -> void:
 	var sign_in_request: Dictionary = _generate_intear_sign_in_request({
